@@ -1,16 +1,10 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FoodWithState } from '@/types/food';
-import { AlertTriangle, ChevronDown, X, Baby, Utensils } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, AlertTriangle, GripHorizontal, Circle, Square } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import type { FoodWithState } from "@/types/food";
 
 interface FoodDetailSheetProps {
   food: FoodWithState | null;
@@ -18,39 +12,49 @@ interface FoodDetailSheetProps {
   onLogFood: (food: FoodWithState) => void;
 }
 
-interface ServingGuide {
-  '6-9mo'?: string;
-  '9-12mo'?: string;
-  '12mo+'?: string;
+interface ServingGuideEntry {
+  text: string;
+  icon?: string;
 }
 
-const AGE_LABELS: Record<string, { label: string; icon: string; description: string }> = {
-  '6-9mo': { 
-    label: '6-9 months', 
-    icon: '👶',
-    description: 'Palmar grasp, larger pieces'
-  },
-  '9-12mo': { 
-    label: '9-12 months', 
-    icon: '🧒',
-    description: 'Pincer grasp developing'
-  },
-  '12mo+': { 
-    label: '12+ months', 
-    icon: '👦',
-    description: 'More advanced eating skills'
-  },
+interface ServingGuide {
+  "6-9mo"?: ServingGuideEntry;
+  "9-12mo"?: ServingGuideEntry;
+  "12mo+"?: ServingGuideEntry;
+}
+
+const AGE_TABS = [
+  { key: "6-9mo", label: "6-9 mo" },
+  { key: "9-12mo", label: "9-12 mo" },
+  { key: "12mo+", label: "12+ mo" },
+] as const;
+
+const getIconForGuide = (icon?: string) => {
+  switch (icon) {
+    case "grip":
+      return <GripHorizontal className="h-12 w-12 text-primary" />;
+    case "circle":
+      return <Circle className="h-12 w-12 text-primary" />;
+    case "slice":
+    default:
+      return <Square className="h-12 w-12 text-primary" />;
+  }
 };
 
 export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetProps) {
-  const [isClosing, setIsClosing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("6-9mo");
+
+  useEffect(() => {
+    if (food) {
+      setIsVisible(true);
+      setActiveTab("6-9mo");
+    }
+  }, [food]);
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsClosing(false);
-      onClose();
-    }, 300);
+    setIsVisible(false);
+    setTimeout(onClose, 300);
   };
 
   const handleLogFood = () => {
@@ -60,172 +64,158 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
     }
   };
 
-  const servingGuide = food?.serving_guide as ServingGuide | null;
-  const chokingLevel = food?.choking_hazard_level as 'Low' | 'Moderate' | 'High' | null;
+  if (!food) return null;
 
-  const getChokingBadgeVariant = (level: string | null) => {
-    switch (level) {
-      case 'High':
-        return 'destructive';
-      case 'Moderate':
-        return 'secondary';
+  const servingGuide = food.serving_guide as ServingGuide | null;
+  const hasServingGuide = servingGuide && Object.keys(servingGuide).length > 0;
+  const isHighChokingRisk = food.choking_hazard_level === "High";
+  const isAllergen = food.is_allergen;
+
+  const getButtonText = () => {
+    if (!food.state) return "Add to Tracker";
+    switch (food.state.status) {
+      case "SAFE":
+        return "Log Again";
+      case "TRYING":
+        return "Log Another Try";
+      case "REACTION":
+        return "Log New Attempt";
       default:
-        return 'outline';
+        return "Log First Try";
     }
   };
 
-  const hasServingGuide = servingGuide && Object.keys(servingGuide).length > 0;
-
   return (
     <AnimatePresence>
-      {food && (
+      {isVisible && (
         <>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: isClosing ? 0 : 1 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 z-50"
             onClick={handleClose}
           />
 
           {/* Sheet */}
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: isClosing ? '100%' : 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] rounded-t-3xl bg-card shadow-2xl overflow-hidden flex flex-col"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] overflow-hidden rounded-t-3xl bg-background flex flex-col"
           >
-            {/* Drag Handle */}
-            <div className="flex justify-center py-3 shrink-0">
-              <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
-            </div>
+            {/* Hero Section */}
+            <div className="relative bg-gradient-to-b from-primary/10 to-background pt-4 pb-6 px-6">
+              {/* Close Button */}
+              <button
+                onClick={handleClose}
+                className="absolute top-4 right-4 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
+              >
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
 
-            {/* Close Button */}
-            <button
-              onClick={handleClose}
-              className="absolute top-4 right-4 p-2 rounded-full bg-muted/80 hover:bg-muted transition-colors z-10"
-            >
-              <X className="h-5 w-5 text-muted-foreground" />
-            </button>
-
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-6 pb-4">
-              {/* Hero Section */}
-              <div className="text-center mb-6">
-                <div className="text-7xl mb-3">{food.emoji}</div>
+              {/* Food Emoji & Name */}
+              <div className="text-center pt-4">
+                <span className="text-7xl block mb-3">{food.emoji}</span>
                 <h2 className="text-2xl font-bold text-foreground">{food.name}</h2>
-                <p className="text-muted-foreground capitalize">{food.category}</p>
-                
-                {/* Badges */}
-                <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-                  {food.is_allergen && (
-                    <Badge variant="outline" className="border-amber-500 text-amber-600 bg-amber-500/10">
-                      ⚠️ Allergen
-                    </Badge>
-                  )}
-                  {chokingLevel && (
-                    <Badge variant={getChokingBadgeVariant(chokingLevel)}>
-                      {chokingLevel === 'High' && <AlertTriangle className="h-3 w-3 mr-1" />}
-                      {chokingLevel} Choking Risk
-                    </Badge>
-                  )}
-                </div>
+                <Badge variant="secondary" className="mt-2">
+                  {food.category}
+                </Badge>
               </div>
+            </div>
 
-              {/* High Choking Hazard Warning */}
-              {chokingLevel === 'High' && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="mb-6 p-4 rounded-2xl bg-destructive/10 border border-destructive/30"
-                >
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
-                    <div>
-                      <h3 className="font-semibold text-destructive">Common Choking Hazard</h3>
-                      <p className="text-sm text-destructive/80 mt-1">
-                        This food requires careful preparation. Always follow age-appropriate serving guidelines below.
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
+            {/* Safety Banners */}
+            <div className="px-4 space-y-2">
+              {isHighChokingRisk && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0" />
+                  <p className="text-sm font-medium text-destructive">
+                    Common Choking Hazard – Always follow preparation guidelines
+                  </p>
+                </div>
               )}
-
-              {/* How to Serve Section */}
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Utensils className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-semibold text-foreground">How to Serve</h3>
-                </div>
-
-                {hasServingGuide ? (
-                  <Accordion type="single" collapsible defaultValue="6-9mo" className="space-y-2">
-                    {Object.entries(servingGuide).map(([ageKey, instruction]) => {
-                      const ageInfo = AGE_LABELS[ageKey];
-                      if (!instruction || !ageInfo) return null;
-
-                      return (
-                        <AccordionItem
-                          key={ageKey}
-                          value={ageKey}
-                          className="border rounded-2xl bg-background px-4 overflow-hidden"
-                        >
-                          <AccordionTrigger className="hover:no-underline py-4">
-                            <div className="flex items-center gap-3 text-left">
-                              <span className="text-2xl">{ageInfo.icon}</span>
-                              <div>
-                                <div className="font-semibold text-foreground">{ageInfo.label}</div>
-                                <div className="text-xs text-muted-foreground">{ageInfo.description}</div>
-                              </div>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent className="pb-4">
-                            <div className="bg-muted/50 rounded-xl p-4">
-                              <p className="text-foreground leading-relaxed">{instruction}</p>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      );
-                    })}
-                  </Accordion>
-                ) : (
-                  <div className="bg-muted/30 rounded-2xl p-6 text-center">
-                    <Baby className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-                    <p className="text-muted-foreground font-medium">Serving Guide Coming Soon</p>
-                    <p className="text-sm text-muted-foreground/70 mt-1">
-                      We're working on adding safety instructions for this food.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Food Status */}
-              {food.state && (
-                <div className="mb-4 p-4 rounded-2xl bg-muted/30">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Current Status</span>
-                    <Badge variant="secondary">
-                      {food.state.status === 'SAFE' && '✅ Safe'}
-                      {food.state.status === 'TRYING' && `🔄 ${food.state.exposure_count}/3 tries`}
-                      {food.state.status === 'REACTION' && '⚠️ Reaction'}
-                      {food.state.status === 'TO_TRY' && '📋 To Try'}
-                    </Badge>
-                  </div>
+              {isAllergen && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-500">
+                    Common Allergen – Introduce carefully and watch for reactions
+                  </p>
                 </div>
               )}
             </div>
 
-            {/* Sticky Footer */}
-            <div className="shrink-0 p-4 border-t border-border bg-card safe-area-bottom">
+            {/* Serving Guide Tabs */}
+            <div className="flex-1 overflow-auto px-4 py-4">
+              {hasServingGuide ? (
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="w-full h-12 p-1 bg-muted rounded-xl">
+                    {AGE_TABS.map((tab) => (
+                      <TabsTrigger
+                        key={tab.key}
+                        value={tab.key}
+                        className="flex-1 h-10 rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                      >
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {AGE_TABS.map((tab) => {
+                    const guide = servingGuide[tab.key];
+                    return (
+                      <TabsContent key={tab.key} value={tab.key} className="mt-4">
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="bg-card rounded-2xl p-6 border border-border"
+                        >
+                          {guide ? (
+                            <div className="flex flex-col items-center text-center gap-4">
+                              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                                {getIconForGuide(guide.icon)}
+                              </div>
+                              <p className="text-lg leading-relaxed text-foreground">
+                                {guide.text}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="text-center py-4">
+                              <p className="text-muted-foreground">
+                                No specific guidance for this age range yet.
+                              </p>
+                            </div>
+                          )}
+                        </motion.div>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <Square className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-medium text-foreground mb-1">
+                    Serving Guide Coming Soon
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-xs">
+                    We're working on adding age-specific preparation guidance for this food.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Sticky Action Bar */}
+            <div className="sticky bottom-0 p-4 bg-background border-t border-border safe-area-bottom">
               <Button
                 onClick={handleLogFood}
                 size="lg"
-                className="w-full h-14 text-lg font-semibold rounded-2xl"
+                className="w-full h-14 text-lg font-semibold rounded-xl"
               >
-                {food.state ? '📝 Log This Food' : '🍽️ Mark as Tried'}
+                {getButtonText()}
               </Button>
             </div>
           </motion.div>
