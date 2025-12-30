@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { FoodCard } from '@/components/FoodCard';
 import { FoodWithState } from '@/types/food';
-import { categories } from '@/data/mockFoods';
 import { Button } from '@/components/ui/button';
 
 interface FoodDexTabProps {
@@ -11,18 +10,28 @@ interface FoodDexTabProps {
 }
 
 export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
-  const { getFoodsWithStates, getTriedCount } = useFoodContext();
-  const [selectedCategory, setSelectedCategory] = useState<string>(categories[0]);
+  const { getFoodsWithStates, getTriedCount, foods } = useFoodContext();
+  
+  // Get unique categories from foods
+  const categories = useMemo(() => {
+    const cats = [...new Set(foods.map(f => f.category))];
+    return cats.sort();
+  }, [foods]);
+
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   
   const allFoods = getFoodsWithStates();
   const triedCount = getTriedCount();
+
+  // Set default category once foods are loaded
+  const currentCategory = selectedCategory || categories[0] || '';
   
   const foodsByCategory = categories.reduce((acc, cat) => {
     acc[cat] = allFoods.filter(f => f.category === cat);
     return acc;
   }, {} as Record<string, FoodWithState[]>);
 
-  const currentFoods = foodsByCategory[selectedCategory] || [];
+  const currentFoods = foodsByCategory[currentCategory] || [];
 
   return (
     <div className="pb-24 px-4">
@@ -44,7 +53,7 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
           <Button
             key={cat}
             size="sm"
-            variant={selectedCategory === cat ? 'default' : 'outline'}
+            variant={currentCategory === cat ? 'default' : 'outline'}
             onClick={() => setSelectedCategory(cat)}
             className="rounded-full flex-shrink-0"
           >
@@ -55,7 +64,7 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
 
       {/* Food Grid */}
       <motion.div
-        key={selectedCategory}
+        key={currentCategory}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="grid grid-cols-3 sm:grid-cols-4 gap-3"

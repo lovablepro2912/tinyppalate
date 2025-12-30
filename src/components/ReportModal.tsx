@@ -74,8 +74,8 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
         return {
           id: log.id,
           created_at: log.created_at,
-          reaction_severity: log.reaction_severity,
-          notes: log.notes,
+          reaction_severity: log.reaction_severity as 0 | 1 | 2,
+          notes: log.notes || '',
           foodName: food?.name || 'Unknown',
           foodEmoji: food?.emoji || '🍽️',
         };
@@ -89,7 +89,7 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
     const allergenStatuses = getAllergenFoods().map(allergen => ({
       name: allergen.name,
       emoji: allergen.emoji,
-      status: allergen.state?.status || 'TO_TRY',
+      status: (allergen.state?.status || 'TO_TRY') as 'SAFE' | 'TRYING' | 'REACTION' | 'TO_TRY',
       exposureCount: allergen.state?.exposure_count || 0,
     }));
 
@@ -102,7 +102,7 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
     try {
       const doc = (
         <DoctorReportPDF
-          babyName={profile.baby_name}
+          babyName={profile?.baby_name || 'Baby'}
           startDate={startDate}
           endDate={endDate}
           safeFoods={reportData.safeFoods}
