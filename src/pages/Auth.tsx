@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Mail, Lock, Loader2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
-const floatingFoods = ['🥕', '🍎', '🥦', '🍌', '🥑', '🍓', '🥬', '🍊'];
+const floatingFoods = ["🥕", "🍎", "🥦", "🍌", "🥑", "🍓", "🥬", "🍊"];
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { signUp, signIn } = useAuth();
   const { toast } = useToast();
@@ -30,7 +30,7 @@ export default function Auth() {
           title: "Account created! 🎉",
           description: "Let's set up your baby's profile.",
         });
-        navigate('/onboarding');
+        navigate("/onboarding");
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
@@ -38,7 +38,7 @@ export default function Auth() {
           title: "Welcome back! 👋",
           description: "Let's continue tracking.",
         });
-        navigate('/');
+        navigate("/");
       }
     } catch (error: any) {
       toast({
@@ -59,8 +59,8 @@ export default function Auth() {
           key={i}
           className="absolute text-4xl pointer-events-none select-none opacity-60"
           initial={{
-            x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 400),
-            y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+            x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 400),
+            y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 800),
           }}
           animate={{
             y: [0, -20, 0],
@@ -73,8 +73,8 @@ export default function Auth() {
             ease: "easeInOut",
           }}
           style={{
-            left: `${10 + (i * 10)}%`,
-            top: `${10 + (i * 8)}%`,
+            left: `${10 + i * 10}%`,
+            top: `${10 + i * 8}%`,
           }}
         >
           {emoji}
@@ -91,7 +91,7 @@ export default function Auth() {
         <div className="bg-card/95 backdrop-blur-sm rounded-3xl p-8 card-shadow border border-border/50">
           {/* Logo */}
           <div className="text-center mb-8">
-            <motion.div 
+            <motion.div
               className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent flex items-center justify-center mx-auto mb-4 relative"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -146,9 +146,7 @@ export default function Auth() {
                   minLength={6}
                 />
               </div>
-              {isSignUp && (
-                <p className="text-xs text-muted-foreground">At least 6 characters</p>
-              )}
+              {isSignUp && <p className="text-xs text-muted-foreground">At least 6 characters</p>}
             </div>
 
             <Button
@@ -160,7 +158,7 @@ export default function Auth() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : isSignUp ? (
                 <span className="flex items-center gap-2">
-                  Create Account <span className="text-xl">🚀</span>
+                  Create Account <span className="text-xl"></span>
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
@@ -188,11 +186,7 @@ export default function Auth() {
             onClick={() => setIsSignUp(!isSignUp)}
             className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-primary/30 text-primary font-medium hover:bg-primary/5 transition-colors"
           >
-            {isSignUp ? (
-              <span>Sign in to your account →</span>
-            ) : (
-              <span>Create a new account →</span>
-            )}
+            {isSignUp ? <span>Sign in to your account →</span> : <span>Create a new account →</span>}
           </button>
         </div>
 
