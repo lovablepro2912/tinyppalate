@@ -14,6 +14,7 @@ interface FoodContextType {
   getRecentLogs: (limit: number) => (FoodLog & { food: RefFood })[];
   getNextSuggestions: (limit: number) => RefFood[];
   getAllergenFoods: () => FoodWithState[];
+  getAllergenMaintenanceNeeded: () => FoodWithState[];
 }
 
 const FoodContext = createContext<FoodContextType | undefined>(undefined);
@@ -126,6 +127,24 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       });
   }, [foods, userFoodStates]);
 
+  const getAllergenMaintenanceNeeded = useCallback(() => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    return foods
+      .filter(f => f.is_allergen)
+      .map(food => {
+        const state = userFoodStates.find(s => s.food_id === food.id);
+        return { ...food, state };
+      })
+      .filter(food => {
+        if (!food.state || food.state.status !== 'SAFE') return false;
+        if (!food.state.last_eaten) return true;
+        const lastEaten = new Date(food.state.last_eaten);
+        return lastEaten < sevenDaysAgo;
+      });
+  }, [foods, userFoodStates]);
+
   return (
     <FoodContext.Provider value={{
       profile,
@@ -139,6 +158,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       getRecentLogs,
       getNextSuggestions,
       getAllergenFoods,
+      getAllergenMaintenanceNeeded,
     }}>
       {children}
     </FoodContext.Provider>

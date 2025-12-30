@@ -8,9 +8,10 @@ interface FoodCardProps {
   onClick?: () => void;
   size?: 'sm' | 'md' | 'lg';
   showStatus?: boolean;
+  forceColor?: boolean; // New prop to force full color (for Try Next section)
 }
 
-export function FoodCard({ food, onClick, size = 'md', showStatus = true }: FoodCardProps) {
+export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceColor = false }: FoodCardProps) {
   const isUnlocked = food.state && (food.state.status === 'SAFE' || food.state.status === 'TRYING');
   const hasReaction = food.state?.status === 'REACTION';
 
@@ -25,6 +26,9 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true }: Food
     md: 'text-3xl',
     lg: 'text-4xl',
   };
+
+  // Only apply grayscale if not unlocked, not a reaction, and not forced to color
+  const shouldBeGrayscale = !forceColor && !isUnlocked && !hasReaction;
 
   return (
     <motion.button
@@ -41,7 +45,7 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true }: Food
       <div className={cn(
         sizeClasses[size],
         "flex items-center justify-center rounded-xl bg-secondary/50",
-        !isUnlocked && !hasReaction && "grayscale-food"
+        shouldBeGrayscale && "grayscale-food"
       )}>
         <span className={emojiSizes[size]}>{food.emoji}</span>
       </div>

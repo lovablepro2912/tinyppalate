@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, AlertTriangle, Check, ShieldAlert } from 'lucide-react';
+import { X, AlertTriangle, Check, ShieldAlert, AlertOctagon } from 'lucide-react';
 import { FoodWithState } from '@/types/food';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -14,15 +14,34 @@ interface LogFoodModalProps {
   showSafetyWarning?: boolean;
 }
 
-const symptoms = ['Hives', 'Vomiting', 'Swelling', 'Rash', 'Breathing issues'];
+// Symptom severity mapping
+const mildSymptoms = ['Hives', 'Rash', 'Vomiting'];
+const severeSymptoms = ['Swelling', 'Breathing issues'];
+const allSymptoms = [...mildSymptoms, ...severeSymptoms];
 
 export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFoodModalProps) {
   const { logFood, profile } = useFoodContext();
   const [step, setStep] = useState<'safety' | 'log'>(showSafetyWarning ? 'safety' : 'log');
   const [hasReaction, setHasReaction] = useState(false);
-  const [severity, setSeverity] = useState<0 | 1 | 2>(0);
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+
+  // Reset state when food changes
+  useEffect(() => {
+    setStep(showSafetyWarning ? 'safety' : 'log');
+    setHasReaction(false);
+    setSelectedSymptoms([]);
+    setNotes('');
+  }, [food, showSafetyWarning]);
+
+  // Auto-calculate severity based on selected symptoms
+  const autoSeverity = useMemo((): 0 | 1 | 2 => {
+    if (!hasReaction || selectedSymptoms.length === 0) return 0;
+    const hasSevere = selectedSymptoms.some(s => severeSymptoms.includes(s));
+    return hasSevere ? 2 : 1;
+  }, [hasReaction, selectedSymptoms]);
+
+  const isSevere = autoSeverity === 2;
 
   if (!food) return null;
 
@@ -30,7 +49,7 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
     const symptomNotes = selectedSymptoms.length > 0 
       ? `Symptoms: ${selectedSymptoms.join(', ')}. ${notes}` 
       : notes;
-    logFood(food.id, hasReaction, severity, symptomNotes);
+    logFood(food.id, hasReaction, autoSeverity, symptomNotes);
     onClose();
   };
 
@@ -51,11 +70,17 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="w-full max-w-md bg-card rounded-3xl card-shadow overflow-hidden"
+          className={cn(
+            "w-full max-w-md bg-card rounded-3xl card-shadow overflow-hidden transition-all duration-300",
+            hasReaction && "ring-4 ring-danger/60"
+          )}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className={cn(
+            "flex items-center justify-between p-4 border-b transition-colors",
+            hasReaction ? "border-danger/30 bg-danger/5" : "border-border"
+          )}>
             <div className="flex items-center gap-3">
               <span className="text-3xl">{food.emoji}</span>
               <div>
@@ -102,7 +127,10 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
                 className="space-y-5"
               >
                 {/* Reaction Toggle */}
-                <div className="flex items-center justify-between p-4 bg-secondary rounded-2xl">
+                <div className={cn(
+                  "flex items-center justify-between p-4 rounded-2xl transition-colors",
+                  hasReaction ? "bg-danger/10" : "bg-secondary"
+                )}>
                   <div className="flex items-center gap-3">
                     <AlertTriangle className={cn(
                       "w-5 h-5 transition-colors",
@@ -125,65 +153,67 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
                       exit={{ height: 0, opacity: 0 }}
                       className="space-y-4 overflow-hidden"
                     >
-                      {/* Severity */}
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                          Severity
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <Button
-                            type="button"
-                            variant={severity === 1 ? 'default' : 'outline'}
-                            onClick={() => setSeverity(1)}
-                            className={cn(
-                              "rounded-xl",
-                              severity === 1 && "bg-warning hover:bg-warning/90 text-warning-foreground"
-                            )}
-                          >
-                            Mild
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={severity === 2 ? 'default' : 'outline'}
-                            onClick={() => setSeverity(2)}
-                            className={cn(
-                              "rounded-xl",
-                              severity === 2 && "bg-danger hover:bg-danger/90 text-danger-foreground"
-                            )}
-                          >
-                            Severe
-                          </Button>
-                        </div>
-                      </div>
+                      {/* Severe Warning Banner */}
+                      {isSevere && (
+                        <motion.div
+                          initial={{ scale: 0.95, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="flex items-center gap-3 p-4 bg-danger rounded-2xl"
+                        >
+                          <AlertOctagon className="w-6 h-6 text-danger-foreground flex-shrink-0" />
+                          <div>
+                            <p className="font-bold text-danger-foreground">
+                              Seek Immediate Medical Attention
+                            </p>
+                            <p className="text-sm text-danger-foreground/90">
+                              Severe symptoms detected. Call emergency services if breathing is affected.
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
 
                       {/* Symptoms */}
                       <div>
                         <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                          Symptoms
+                          Select Symptoms
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {symptoms.map(symptom => (
-                            <Button
-                              key={symptom}
-                              type="button"
-                              size="sm"
-                              variant={selectedSymptoms.includes(symptom) ? 'default' : 'outline'}
-                              onClick={() => {
-                                setSelectedSymptoms(prev => 
-                                  prev.includes(symptom) 
-                                    ? prev.filter(s => s !== symptom)
-                                    : [...prev, symptom]
-                                );
-                              }}
-                              className={cn(
-                                "rounded-full",
-                                selectedSymptoms.includes(symptom) && "bg-danger hover:bg-danger/90"
-                              )}
-                            >
-                              {symptom}
-                            </Button>
-                          ))}
+                          {allSymptoms.map(symptom => {
+                            const isSelected = selectedSymptoms.includes(symptom);
+                            const isSevereSymptom = severeSymptoms.includes(symptom);
+                            return (
+                              <Button
+                                key={symptom}
+                                type="button"
+                                size="sm"
+                                variant={isSelected ? 'default' : 'outline'}
+                                onClick={() => {
+                                  setSelectedSymptoms(prev => 
+                                    prev.includes(symptom) 
+                                      ? prev.filter(s => s !== symptom)
+                                      : [...prev, symptom]
+                                  );
+                                }}
+                                className={cn(
+                                  "rounded-full transition-all",
+                                  isSelected && isSevereSymptom && "bg-danger hover:bg-danger/90",
+                                  isSelected && !isSevereSymptom && "bg-warning hover:bg-warning/90 text-warning-foreground",
+                                  !isSelected && isSevereSymptom && "border-danger/50 text-danger hover:bg-danger/10"
+                                )}
+                              >
+                                {symptom}
+                                {isSevereSymptom && !isSelected && (
+                                  <span className="ml-1 text-[10px] opacity-70">⚠️</span>
+                                )}
+                              </Button>
+                            );
+                          })}
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {autoSeverity === 0 && "Select symptoms to auto-determine severity"}
+                          {autoSeverity === 1 && "🟡 Mild reaction detected"}
+                          {autoSeverity === 2 && "🔴 Severe reaction detected"}
+                        </p>
                       </div>
                     </motion.div>
                   )}
@@ -206,8 +236,9 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
                 {/* Submit */}
                 <Button 
                   onClick={handleLog}
+                  disabled={hasReaction && selectedSymptoms.length === 0}
                   className={cn(
-                    "w-full h-12 rounded-xl font-bold",
+                    "w-full h-12 rounded-xl font-bold transition-all",
                     hasReaction 
                       ? "bg-danger hover:bg-danger/90" 
                       : "bg-success hover:bg-success/90"
