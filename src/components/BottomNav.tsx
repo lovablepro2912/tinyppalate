@@ -1,4 +1,4 @@
-import { Home, Grid3X3, ShieldCheck, User } from 'lucide-react';
+import { Home, Grid3X3, ScrollText, ShieldCheck, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -10,6 +10,7 @@ interface BottomNavProps {
 const tabs = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'dex', label: 'Food Dex', icon: Grid3X3 },
+  { id: 'journal', label: 'Journal', icon: ScrollText },
   { id: 'safety', label: 'Safety', icon: ShieldCheck },
   { id: 'profile', label: 'Profile', icon: User },
 ];

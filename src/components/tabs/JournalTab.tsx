@@ -1,0 +1,153 @@
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { format, isToday, isYesterday, parseISO } from 'date-fns';
+import { Check, AlertTriangle } from 'lucide-react';
+import { useFoodContext } from '@/contexts/FoodContext';
+import { FoodLog, RefFood } from '@/types/food';
+import { EditLogModal } from '@/components/EditLogModal';
+import { cn } from '@/lib/utils';
+
+interface LogWithFood extends FoodLog {
+  food: RefFood;
+}
+
+interface GroupedLogs {
+  [date: string]: LogWithFood[];
+}
+
+function formatDateHeader(dateStr: string): string {
+  const date = parseISO(dateStr);
+  if (isToday(date)) return 'Today';
+  if (isYesterday(date)) return 'Yesterday';
+  return format(date, 'EEE, MMM d');
+}
+
+function formatTime(dateStr: string): string {
+  return format(parseISO(dateStr), 'h:mm a');
+}
+
+export function JournalTab() {
+  const { logs, userFoodStates, foods } = useFoodContext();
+  const [selectedLog, setSelectedLog] = useState<LogWithFood | null>(null);
+
+  // Get all logs with food data
+  const logsWithFood = useMemo(() => {
+    return logs
+      .map(log => {
+        const state = userFoodStates.find(s => s.id === log.user_food_state_id);
+        const food = foods.find(f => f.id === state?.food_id);
+        if (!food) return null;
+        return { ...log, food };
+      })
+      .filter((log): log is LogWithFood => log !== null)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [logs, userFoodStates, foods]);
+
+  // Group logs by date
+  const groupedLogs = useMemo(() => {
+    return logsWithFood.reduce<GroupedLogs>((groups, log) => {
+      const dateKey = format(parseISO(log.created_at), 'yyyy-MM-dd');
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(log);
+      return groups;
+    }, {});
+  }, [logsWithFood]);
+
+  const sortedDates = Object.keys(groupedLogs).sort((a, b) => 
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+
+  return (
+    <div className="pb-24 pt-4">
+      {/* Header */}
+      <div className="px-4 mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Food Journal</h1>
+        <p className="text-muted-foreground text-sm">
+          {logsWithFood.length} {logsWithFood.length === 1 ? 'entry' : 'entries'} logged
+        </p>
+      </div>
+
+      {/* Timeline */}
+      <div className="px-4">
+        {sortedDates.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <p className="text-lg">No entries yet</p>
+            <p className="text-sm mt-1">Start logging foods to see your journal</p>
+          </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {sortedDates.map((dateKey, dateIndex) => (
+              <motion.div
+                key={dateKey}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: dateIndex * 0.05 }}
+                className="mb-6"
+              >
+                {/* Date Header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatDateHeader(dateKey)}
+                  </span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+
+                {/* Log Cards */}
+                <div className="space-y-2">
+                  {groupedLogs[dateKey].map((log, logIndex) => (
+                    <motion.button
+                      key={log.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: dateIndex * 0.05 + logIndex * 0.03 }}
+                      onClick={() => setSelectedLog(log)}
+                      className={cn(
+                        "w-full flex items-center gap-4 p-4 rounded-xl transition-all",
+                        "bg-card border border-border hover:bg-accent/50",
+                        log.reaction_severity > 0 && "bg-danger/10 border-danger/30"
+                      )}
+                    >
+                      {/* Food Icon */}
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
+                        {log.food.emoji}
+                      </div>
+
+                      {/* Food Name & Time */}
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-foreground">{log.food.name}</p>
+                        <p className="text-sm text-muted-foreground">{formatTime(log.created_at)}</p>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div>
+                        {log.reaction_severity > 0 ? (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-danger/20 text-danger">
+                            <AlertTriangle className="w-3 h-3" />
+                            Reaction!
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-safe/20 text-safe">
+                            <Check className="w-3 h-3" />
+                            Eaten
+                          </span>
+                        )}
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
+      </div>
+
+      {/* Edit Log Modal */}
+      <EditLogModal
+        log={selectedLog}
+        onClose={() => setSelectedLog(null)}
+      />
+    </div>
+  );
+}

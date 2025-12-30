@@ -2,6 +2,12 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import { RefFood, UserFoodState, FoodLog, Profile, FoodStatus, FoodWithState } from '@/types/food';
 import { refFoods, initialUserFoodStates, initialLogs, mockProfile } from '@/data/mockFoods';
 
+interface LogUpdate {
+  reaction_severity?: 0 | 1 | 2;
+  notes?: string;
+  created_at?: string;
+}
+
 interface FoodContextType {
   profile: Profile;
   foods: RefFood[];
@@ -10,6 +16,8 @@ interface FoodContextType {
   getFoodWithState: (foodId: number) => FoodWithState;
   getFoodsWithStates: () => FoodWithState[];
   logFood: (foodId: number, hasReaction: boolean, severity?: 0 | 1 | 2, notes?: string) => void;
+  updateLog: (logId: string, updates: LogUpdate) => void;
+  deleteLog: (logId: string) => void;
   getTriedCount: () => number;
   getRecentLogs: (limit: number) => (FoodLog & { food: RefFood })[];
   getNextSuggestions: (limit: number) => RefFood[];
@@ -96,6 +104,23 @@ export function FoodProvider({ children }: { children: ReactNode }) {
     setLogs(prev => [newLog, ...prev]);
   }, [foods, userFoodStates, profile.id]);
 
+  const updateLog = useCallback((logId: string, updates: LogUpdate) => {
+    setLogs(prev => prev.map(log => 
+      log.id === logId
+        ? { 
+            ...log, 
+            ...(updates.reaction_severity !== undefined && { reaction_severity: updates.reaction_severity }),
+            ...(updates.notes !== undefined && { notes: updates.notes }),
+            ...(updates.created_at !== undefined && { created_at: updates.created_at }),
+          }
+        : log
+    ));
+  }, []);
+
+  const deleteLog = useCallback((logId: string) => {
+    setLogs(prev => prev.filter(log => log.id !== logId));
+  }, []);
+
   const getTriedCount = useCallback(() => {
     return userFoodStates.filter(s => s.status === 'SAFE' || s.status === 'TRYING').length;
   }, [userFoodStates]);
@@ -154,6 +179,8 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       getFoodWithState,
       getFoodsWithStates,
       logFood,
+      updateLog,
+      deleteLog,
       getTriedCount,
       getRecentLogs,
       getNextSuggestions,
