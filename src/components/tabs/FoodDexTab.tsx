@@ -20,10 +20,10 @@ interface FoodDexTabProps {
 export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
   const { getFoodsWithStates, getTriedCount, foods } = useFoodContext();
   
-  // Get unique categories from foods
+  // Get unique categories from foods, with "All" as first option
   const categories = useMemo(() => {
     const cats = [...new Set(foods.map(f => f.category))];
-    return cats.sort();
+    return ['All', ...cats.sort()];
   }, [foods]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -35,10 +35,15 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
   // Set default category once foods are loaded
   const currentCategory = selectedCategory || categories[0] || '';
   
-  const foodsByCategory = categories.reduce((acc, cat) => {
-    acc[cat] = allFoods.filter(f => f.category === cat);
-    return acc;
-  }, {} as Record<string, FoodWithState[]>);
+  const foodsByCategory = useMemo(() => {
+    const result: Record<string, FoodWithState[]> = {
+      'All': [...allFoods].sort((a, b) => a.name.localeCompare(b.name)),
+    };
+    categories.filter(c => c !== 'All').forEach(cat => {
+      result[cat] = allFoods.filter(f => f.category === cat);
+    });
+    return result;
+  }, [allFoods, categories]);
 
   // Filter foods based on search query
   const filteredFoods = useMemo(() => {
@@ -55,6 +60,7 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
   // Get emoji for category
   const getCategoryEmoji = (cat: string) => {
     const categoryEmojis: Record<string, string> = {
+      'All': '📋',
       'Fruits': '🍎',
       'Vegetables': '🥦',
       'Proteins': '🍗',
