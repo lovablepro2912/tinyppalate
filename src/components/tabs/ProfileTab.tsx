@@ -1,14 +1,24 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
-import { Baby, Calendar, Trophy, TrendingUp, BookOpen } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Baby, Calendar, Trophy, TrendingUp, BookOpen, Pencil, LogOut, Trash2, ChevronRight, ExternalLink } from 'lucide-react';
 import { differenceInMonths, differenceInDays, format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { OnboardingGuideSheet } from '@/components/onboarding/OnboardingGuideSheet';
+import { EditProfileModal } from '@/components/EditProfileModal';
+import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
+import { useHaptics } from '@/hooks/useHaptics';
+import { APP_CONFIG } from '@/config/app';
 
 export function ProfileTab() {
   const [guideOpen, setGuideOpen] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
   const { profile, getTriedCount, getAllergenFoods, logs } = useFoodContext();
+  const { user, signOut } = useAuth();
+  const { medium } = useHaptics();
   
   const birthDate = new Date(profile.birth_date);
   const now = new Date();
@@ -23,6 +33,32 @@ export function ProfileTab() {
     { label: 'Foods Tried', value: triedCount, icon: Trophy, color: 'text-primary' },
     { label: 'Safe Allergens', value: `${safeAllergens}/9`, icon: TrendingUp, color: 'text-success' },
     { label: 'Total Logs', value: logs.length, icon: Calendar, color: 'text-warning' },
+  ];
+
+  const handleSignOut = async () => {
+    medium();
+    await signOut();
+  };
+
+  const accountActions = [
+    { 
+      label: 'Edit Profile', 
+      icon: Pencil, 
+      onClick: () => { medium(); setEditProfileOpen(true); },
+      variant: 'default' as const 
+    },
+    { 
+      label: 'Sign Out', 
+      icon: LogOut, 
+      onClick: handleSignOut,
+      variant: 'default' as const 
+    },
+    { 
+      label: 'Delete Account', 
+      icon: Trash2, 
+      onClick: () => { medium(); setDeleteDialogOpen(true); },
+      variant: 'danger' as const 
+    },
   ];
 
   return (
@@ -83,7 +119,7 @@ export function ProfileTab() {
 
       {/* Progress Summary */}
       <motion.div
-        className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-6"
+        className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-6 mb-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -107,11 +143,11 @@ export function ProfileTab() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="mt-6"
+        className="mb-6"
       >
         <Button
           variant="outline"
-          onClick={() => setGuideOpen(true)}
+          onClick={() => { medium(); setGuideOpen(true); }}
           className="w-full h-12 rounded-xl gap-2"
         >
           <BookOpen className="w-4 h-4" />
@@ -119,10 +155,86 @@ export function ProfileTab() {
         </Button>
       </motion.div>
 
+      {/* Account Settings */}
+      <motion.div
+        className="bg-card rounded-3xl card-shadow overflow-hidden mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <div className="px-4 py-3 border-b border-border">
+          <h3 className="font-bold text-foreground">Account Settings</h3>
+        </div>
+        <div className="divide-y divide-border">
+          {accountActions.map((action) => (
+            <button
+              key={action.label}
+              onClick={action.onClick}
+              className={`w-full flex items-center justify-between px-4 py-3.5 hover:bg-secondary/50 transition-colors ${
+                action.variant === 'danger' ? 'text-danger' : 'text-foreground'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <action.icon className="w-5 h-5" />
+                <span className="font-medium">{action.label}</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* App Info Footer */}
+      <motion.div
+        className="text-center space-y-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+      >
+        <p className="text-sm font-medium text-muted-foreground">
+          {APP_CONFIG.name} v{APP_CONFIG.version}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {user?.email}
+        </p>
+        <div className="flex items-center justify-center gap-4">
+          <a 
+            href={APP_CONFIG.privacyPolicyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+          >
+            Privacy Policy
+            <ExternalLink className="w-3 h-3" />
+          </a>
+          <span className="text-muted-foreground">·</span>
+          <a 
+            href={APP_CONFIG.termsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+          >
+            Terms
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      </motion.div>
+
+      {/* Modals */}
       <OnboardingGuideSheet 
         open={guideOpen} 
         onOpenChange={setGuideOpen} 
         babyName={profile.baby_name}
+      />
+      
+      <EditProfileModal
+        open={editProfileOpen}
+        onClose={() => setEditProfileOpen(false)}
+      />
+      
+      <DeleteAccountDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
       />
     </div>
   );

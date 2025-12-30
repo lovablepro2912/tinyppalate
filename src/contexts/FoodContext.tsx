@@ -10,6 +10,11 @@ interface LogUpdate {
   created_at?: string;
 }
 
+interface ProfileUpdate {
+  baby_name?: string;
+  birth_date?: string;
+}
+
 interface FoodContextType {
   profile: Profile | null;
   foods: RefFood[];
@@ -21,6 +26,7 @@ interface FoodContextType {
   logFood: (foodId: number, hasReaction: boolean, severity?: 0 | 1 | 2, notes?: string) => Promise<void>;
   updateLog: (logId: string, updates: LogUpdate) => Promise<void>;
   deleteLog: (logId: string) => Promise<void>;
+  updateProfile: (updates: ProfileUpdate) => Promise<void>;
   getTriedCount: () => number;
   getRecentLogs: (limit: number) => (FoodLog & { food: RefFood })[];
   getNextSuggestions: (limit: number) => RefFood[];
@@ -234,6 +240,23 @@ export function FoodProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshData]);
 
+  const updateProfile = useCallback(async (updates: ProfileUpdate) => {
+    if (!user) return;
+    
+    try {
+      await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id);
+      
+      await refreshData();
+    } catch (error) {
+      if (import.meta.env.DEV) console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.');
+      throw error;
+    }
+  }, [user, refreshData]);
+
   const getTriedCount = useCallback(() => {
     return userFoodStates.filter(s => s.status === 'SAFE' || s.status === 'TRYING').length;
   }, [userFoodStates]);
@@ -352,6 +375,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       logFood,
       updateLog,
       deleteLog,
+      updateProfile,
       getTriedCount,
       getRecentLogs,
       getNextSuggestions,
