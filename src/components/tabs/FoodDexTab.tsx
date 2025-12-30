@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { FoodCard } from '@/components/FoodCard';
 import { FoodWithState } from '@/types/food';
-import { ChevronDown } from 'lucide-react';
+import { Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -26,6 +27,7 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
   }, [foods]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   const allFoods = getFoodsWithStates();
   const triedCount = getTriedCount();
@@ -38,7 +40,17 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
     return acc;
   }, {} as Record<string, FoodWithState[]>);
 
-  const currentFoods = foodsByCategory[currentCategory] || [];
+  // Filter foods based on search query
+  const filteredFoods = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return foodsByCategory[currentCategory] || [];
+    }
+    
+    const query = searchQuery.toLowerCase().trim();
+    return allFoods.filter(food => 
+      food.name.toLowerCase().includes(query)
+    );
+  }, [searchQuery, allFoods, foodsByCategory, currentCategory]);
 
   // Get emoji for category
   const getCategoryEmoji = (cat: string) => {
@@ -56,6 +68,8 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
     return categoryEmojis[cat] || '🍽️';
   };
 
+  const isSearching = searchQuery.trim().length > 0;
+
   return (
     <div className="pb-24 px-4">
       {/* Header */}
@@ -70,58 +84,98 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
         </p>
       </motion.div>
 
-      {/* Category Dropdown */}
+      {/* Search Box */}
       <motion.div 
-        className="mb-4"
+        className="mb-3"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.05 }}
       >
-        <Select value={currentCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full h-12 rounded-xl bg-card border-border text-base font-medium">
-            <SelectValue placeholder="Select category">
-              <span className="flex items-center gap-2">
-                <span>{getCategoryEmoji(currentCategory)}</span>
-                <span>{currentCategory}</span>
-                <span className="text-muted-foreground text-sm ml-1">
-                  ({foodsByCategory[currentCategory]?.length || 0})
-                </span>
-              </span>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent className="bg-card border-border z-50 rounded-xl">
-            {categories.map(cat => (
-              <SelectItem 
-                key={cat} 
-                value={cat}
-                className="h-11 text-base cursor-pointer rounded-lg"
-              >
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search foods..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-12 pr-10 h-12 rounded-xl bg-card border-border text-base"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted transition-colors"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Category Dropdown - hide when searching */}
+      {!isSearching && (
+        <motion.div 
+          className="mb-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Select value={currentCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full h-12 rounded-xl bg-card border-border text-base font-medium">
+              <SelectValue placeholder="Select category">
                 <span className="flex items-center gap-2">
-                  <span>{getCategoryEmoji(cat)}</span>
-                  <span>{cat}</span>
+                  <span>{getCategoryEmoji(currentCategory)}</span>
+                  <span>{currentCategory}</span>
                   <span className="text-muted-foreground text-sm ml-1">
-                    ({foodsByCategory[cat]?.length || 0})
+                    ({foodsByCategory[currentCategory]?.length || 0})
                   </span>
                 </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </motion.div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border z-50 rounded-xl">
+              {categories.map(cat => (
+                <SelectItem 
+                  key={cat} 
+                  value={cat}
+                  className="h-11 text-base cursor-pointer rounded-lg"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>{getCategoryEmoji(cat)}</span>
+                    <span>{cat}</span>
+                    <span className="text-muted-foreground text-sm ml-1">
+                      ({foodsByCategory[cat]?.length || 0})
+                    </span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </motion.div>
+      )}
+
+      {/* Search Results Label */}
+      {isSearching && (
+        <motion.p 
+          className="text-sm text-muted-foreground mb-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          {filteredFoods.length} result{filteredFoods.length !== 1 ? 's' : ''} for "{searchQuery}"
+        </motion.p>
+      )}
 
       {/* Food Grid */}
       <motion.div
-        key={currentCategory}
+        key={isSearching ? 'search' : currentCategory}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="grid grid-cols-3 sm:grid-cols-4 gap-3"
       >
-        {currentFoods.map((food, index) => (
+        {filteredFoods.map((food, index) => (
           <motion.div
             key={food.id}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.03 }}
+            transition={{ delay: index * 0.02 }}
           >
             <FoodCard 
               food={food}
@@ -131,6 +185,18 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Empty State */}
+      {filteredFoods.length === 0 && isSearching && (
+        <motion.div 
+          className="text-center py-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <span className="text-4xl mb-3 block">🔍</span>
+          <p className="text-muted-foreground">No foods found for "{searchQuery}"</p>
+        </motion.div>
+      )}
     </div>
   );
 }
