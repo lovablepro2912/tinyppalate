@@ -1,0 +1,17 @@
+{
+  "name": "TinyPalate",
+  "short_name": "TinyPalate",
+  "description": "Track your baby's food journey with TinyPalate. Safely introduce allergens and discover 100 foods before age 1.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2dd4bf",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
