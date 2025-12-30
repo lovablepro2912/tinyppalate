@@ -28,6 +28,15 @@ export default function Onboarding() {
       return;
     }
 
+    if (!birthDate) {
+      toast({
+        title: "Date of birth required",
+        description: "Please enter your baby's date of birth",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -105,7 +114,7 @@ export default function Onboarding() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <span>🎂</span> Date of Birth <span className="text-muted-foreground font-normal">(optional)</span>
+                <span>🎂</span> Date of Birth
               </label>
               <div className="relative">
                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -115,6 +124,7 @@ export default function Onboarding() {
                   onChange={(e) => setBirthDate(e.target.value)}
                   className="pl-12 h-12 rounded-xl bg-secondary/50 border-border/50 focus:bg-card transition-colors"
                   max={new Date().toISOString().split('T')[0]}
+                  required
                 />
               </div>
               <p className="text-xs text-muted-foreground">
