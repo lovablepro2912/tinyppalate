@@ -61,11 +61,17 @@ const styles = StyleSheet.create({
     borderBottom: '1 solid #e5e5e5',
     backgroundColor: '#fef2f2',
   },
-  colDate: { width: '15%' },
-  colFood: { width: '18%' },
+  colDate: { width: '18%' },
+  colTime: { width: '12%' },
+  colFood: { width: '25%' },
+  colStatus: { width: '15%' },
+  colNotes: { width: '30%' },
+  // Reaction table columns
+  colReactionDate: { width: '15%' },
+  colReactionFood: { width: '18%' },
   colReaction: { width: '15%' },
   colSymptoms: { width: '25%' },
-  colNotes: { width: '27%' },
+  colReactionNotes: { width: '27%' },
   allergenGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -112,6 +118,18 @@ const styles = StyleSheet.create({
     borderTop: '1 solid #e5e5e5',
     paddingTop: 10,
   },
+  tableRowMild: {
+    flexDirection: 'row',
+    padding: 8,
+    borderBottom: '1 solid #e5e5e5',
+    backgroundColor: '#fefce8',
+  },
+  tableRowSafe: {
+    flexDirection: 'row',
+    padding: 8,
+    borderBottom: '1 solid #e5e5e5',
+    backgroundColor: '#f0fdf4',
+  },
   noData: {
     fontSize: 11,
     color: '#666',
@@ -140,6 +158,7 @@ interface DoctorReportPDFProps {
   startDate: Date;
   endDate: Date;
   safeFoods: string[];
+  allLogs: LogEntry[];
   reactionLogs: LogEntry[];
   allergenStatuses: AllergenStatus[];
 }
@@ -149,6 +168,7 @@ export function DoctorReportPDF({
   startDate,
   endDate,
   safeFoods,
+  allLogs,
   reactionLogs,
   allergenStatuses,
 }: DoctorReportPDFProps) {
@@ -158,7 +178,15 @@ export function DoctorReportPDF({
     switch (severity) {
       case 1: return 'Mild';
       case 2: return 'SEVERE';
-      default: return 'None';
+      default: return 'Safe';
+    }
+  };
+
+  const getStatusLabel = (severity: number) => {
+    switch (severity) {
+      case 1: return 'Mild Reaction';
+      case 2: return 'Severe Reaction';
+      default: return 'Tolerated';
     }
   };
 
@@ -202,39 +230,77 @@ export function DoctorReportPDF({
           )}
         </View>
 
-        {/* Section 2: Reaction History */}
+        {/* Section 2: Complete Feeding Log */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Reaction History</Text>
-          {reactionLogs.length > 0 ? (
+          <Text style={styles.sectionTitle}>Complete Feeding Log ({allLogs.length} entries)</Text>
+          {allLogs.length > 0 ? (
             <View style={styles.table}>
               {/* Table Header */}
               <View style={styles.tableHeader}>
                 <Text style={styles.colDate}>Date</Text>
+                <Text style={styles.colTime}>Time</Text>
                 <Text style={styles.colFood}>Food</Text>
+                <Text style={styles.colStatus}>Status</Text>
+                <Text style={styles.colNotes}>Notes</Text>
+              </View>
+              {/* Table Rows */}
+              {allLogs.map((log) => (
+                <View
+                  key={log.id}
+                  style={
+                    log.reaction_severity === 2 
+                      ? styles.tableRowSevere 
+                      : log.reaction_severity === 1 
+                      ? styles.tableRowMild
+                      : styles.tableRow
+                  }
+                >
+                  <Text style={styles.colDate}>{format(parseISO(log.created_at), 'MM/dd/yy')}</Text>
+                  <Text style={styles.colTime}>{format(parseISO(log.created_at), 'h:mm a')}</Text>
+                  <Text style={styles.colFood}>{log.foodEmoji} {log.foodName}</Text>
+                  <Text style={styles.colStatus}>{getStatusLabel(log.reaction_severity)}</Text>
+                  <Text style={styles.colNotes}>{extractNotes(log.notes) || '-'}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.noData}>No food entries during this period.</Text>
+          )}
+        </View>
+
+        {/* Section 3: Reaction History (Reactions Only) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Reaction Details ({reactionLogs.length} incidents)</Text>
+          {reactionLogs.length > 0 ? (
+            <View style={styles.table}>
+              {/* Table Header */}
+              <View style={styles.tableHeader}>
+                <Text style={styles.colReactionDate}>Date</Text>
+                <Text style={styles.colReactionFood}>Food</Text>
                 <Text style={styles.colReaction}>Severity</Text>
                 <Text style={styles.colSymptoms}>Symptoms</Text>
-                <Text style={styles.colNotes}>Notes</Text>
+                <Text style={styles.colReactionNotes}>Notes</Text>
               </View>
               {/* Table Rows */}
               {reactionLogs.map((log) => (
                 <View
                   key={log.id}
-                  style={log.reaction_severity === 2 ? styles.tableRowSevere : styles.tableRow}
+                  style={log.reaction_severity === 2 ? styles.tableRowSevere : styles.tableRowMild}
                 >
-                  <Text style={styles.colDate}>{format(parseISO(log.created_at), 'MM/dd/yy')}</Text>
-                  <Text style={styles.colFood}>{log.foodEmoji} {log.foodName}</Text>
+                  <Text style={styles.colReactionDate}>{format(parseISO(log.created_at), 'MM/dd/yy')}</Text>
+                  <Text style={styles.colReactionFood}>{log.foodEmoji} {log.foodName}</Text>
                   <Text style={styles.colReaction}>{getSeverityLabel(log.reaction_severity)}</Text>
                   <Text style={styles.colSymptoms}>{extractSymptoms(log.notes)}</Text>
-                  <Text style={styles.colNotes}>{extractNotes(log.notes)}</Text>
+                  <Text style={styles.colReactionNotes}>{extractNotes(log.notes)}</Text>
                 </View>
               ))}
             </View>
           ) : (
-            <Text style={styles.noData}>No reactions recorded during this period.</Text>
+            <Text style={styles.noData}>No reactions recorded during this period. Great news!</Text>
           )}
         </View>
 
-        {/* Section 3: Allergen Status */}
+        {/* Section 4: Allergen Status */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Allergen Status</Text>
           <View style={styles.allergenGrid}>
