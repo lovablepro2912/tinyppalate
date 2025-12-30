@@ -11,23 +11,27 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Loading spinner component
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  );
+}
+
 // Protected route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, needsOnboarding } = useAuth();
   
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
   
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Redirect to onboarding if user hasn't completed it
   if (needsOnboarding) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -40,18 +44,13 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, needsOnboarding } = useAuth();
   
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
   
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
-  // If onboarding is complete, redirect to home
   if (!needsOnboarding) {
     return <Navigate to="/" replace />;
   }
@@ -64,15 +63,10 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, needsOnboarding } = useAuth();
   
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
   
   if (user) {
-    // Redirect to onboarding if not completed, otherwise home
     if (needsOnboarding) {
       return <Navigate to="/onboarding" replace />;
     }
@@ -82,6 +76,30 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// App routes component - must be inside AuthProvider
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/auth" element={
+        <AuthRoute>
+          <Auth />
+        </AuthRoute>
+      } />
+      <Route path="/onboarding" element={
+        <OnboardingRoute>
+          <Onboarding />
+        </OnboardingRoute>
+      } />
+      <Route path="/" element={
+        <ProtectedRoute>
+          <Index />
+        </ProtectedRoute>
+      } />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -89,25 +107,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/auth" element={
-              <AuthRoute>
-                <Auth />
-              </AuthRoute>
-            } />
-            <Route path="/onboarding" element={
-              <OnboardingRoute>
-                <Onboarding />
-              </OnboardingRoute>
-            } />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
