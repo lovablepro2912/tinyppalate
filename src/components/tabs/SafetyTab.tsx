@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { AllergenCard } from '@/components/AllergenCard';
 import { FoodWithState } from '@/types/food';
-import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, Search, X, Info, Baby, Heart } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Search, X, Info, Baby, Heart } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -146,15 +146,22 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
         <p className="text-muted-foreground mb-2">
           Safely introduce the Top 9 allergens with our guided protocol
         </p>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-primary hover:text-primary/80 p-0 h-auto font-medium"
+        <motion.button
           onClick={() => setShowInfoSheet(true)}
+          className="w-full mt-4 bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]"
+          whileTap={{ scale: 0.98 }}
         >
-          <Info className="w-4 h-4 mr-1" />
-          Learn more about the protocol
-        </Button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+              <Info className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-primary-foreground">Learn about the protocol</p>
+              <p className="text-xs text-primary-foreground/80">Safety tips and how it works</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-primary-foreground/80" />
+        </motion.button>
       </motion.div>
 
       {/* Allergen Info Sheet */}
