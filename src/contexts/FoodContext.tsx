@@ -249,12 +249,69 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       .filter(log => log.food);
   }, [logs, userFoodStates, foods]);
 
+  // Calculate baby's age in months from birth date
+  const getAgeInMonths = useCallback((birthDate: string | null | undefined): number => {
+    if (!birthDate) return 6; // Default to 6 months if unknown
+    const birth = new Date(birthDate);
+    const now = new Date();
+    return Math.floor((now.getTime() - birth.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+  }, []);
+
+  // Get priority score for a food based on baby's age
+  const getAgePriorityScore = useCallback((foodName: string, ageMonths: number): number => {
+    const nameLower = foodName.toLowerCase();
+    
+    // Stage 1 (4-6 months) - First foods: soft, mild, easy to digest
+    const stage1 = ['avocado', 'banana', 'sweet potato', 'pear', 'carrot', 
+                    'pumpkin', 'apple', 'oatmeal', 'rice', 'butternut squash'];
+    
+    // Stage 2 (6-8 months) - Iron & protein introduction
+    const stage2 = ['chicken', 'lentils', 'spinach', 'broccoli', 'peas', 
+                    'zucchini', 'peach', 'mango', 'green beans', 'turkey'];
+    
+    // Stage 3 (8-10 months) - Texture expansion
+    const stage3 = ['beef', 'quinoa', 'blueberries', 'strawberries', 'cucumber',
+                    'pasta', 'cheese', 'yogurt', 'tofu', 'asparagus'];
+    
+    const matchesStage = (stageList: string[]) =>
+      stageList.some(s => nameLower.includes(s));
+    
+    if (ageMonths < 6) {
+      if (matchesStage(stage1)) return 100;
+      return 10; // Not ideal for this age
+    } else if (ageMonths < 8) {
+      if (matchesStage(stage1)) return 100;
+      if (matchesStage(stage2)) return 80;
+      return 30;
+    } else if (ageMonths < 10) {
+      if (matchesStage(stage1)) return 90;
+      if (matchesStage(stage2)) return 100;
+      if (matchesStage(stage3)) return 80;
+      return 50;
+    } else {
+      // 10+ months - all foods appropriate, encourage variety
+      if (matchesStage(stage1)) return 70;
+      if (matchesStage(stage2)) return 80;
+      if (matchesStage(stage3)) return 90;
+      return 100; // Encourage trying new things!
+    }
+  }, []);
+
   const getNextSuggestions = useCallback((limit: number) => {
     const triedFoodIds = new Set(userFoodStates.map(s => s.food_id));
-    return foods
+    const ageInMonths = getAgeInMonths(profile?.birth_date);
+    
+    // Get untried non-allergen foods with priority scores
+    const scoredFoods = foods
       .filter(f => !f.is_allergen && !triedFoodIds.has(f.id))
-      .slice(0, limit);
-  }, [foods, userFoodStates]);
+      .map(food => ({
+        food,
+        score: getAgePriorityScore(food.name, ageInMonths)
+      }))
+      .sort((a, b) => b.score - a.score);
+    
+    return scoredFoods.slice(0, limit).map(s => s.food);
+  }, [foods, userFoodStates, profile, getAgeInMonths, getAgePriorityScore]);
 
   const getAllergenFoods = useCallback(() => {
     return foods
