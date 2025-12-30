@@ -1,5 +1,5 @@
 {
-  "name": "TinyPalate",
+  "name": "TinyPalate - 100 Foods Before 1",
   "short_name": "TinyPalate",
   "description": "Track your baby's food journey with TinyPalate. Safely introduce allergens and discover 100 foods before age 1.",
   "start_url": "/",
@@ -7,11 +7,35 @@
   "background_color": "#f8fafc",
   "theme_color": "#2dd4bf",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "id": "/",
+  "categories": ["health", "lifestyle", "food"],
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64",
-      "type": "image/x-icon"
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }
