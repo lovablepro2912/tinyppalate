@@ -6,6 +6,7 @@ import { FoodPickerModal } from '@/components/FoodPickerModal';
 import { LogFoodModal } from '@/components/LogFoodModal';
 import { HomeTab } from '@/components/tabs/HomeTab';
 import { FoodDexTab } from '@/components/tabs/FoodDexTab';
+import { JournalTab } from '@/components/tabs/JournalTab';
 import { SafetyTab } from '@/components/tabs/SafetyTab';
 import { ProfileTab } from '@/components/tabs/ProfileTab';
 import { FoodWithState } from '@/types/food';
@@ -33,6 +34,7 @@ function AppContent() {
       <main className="max-w-lg mx-auto">
         {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
+        {activeTab === 'journal' && <JournalTab />}
         {activeTab === 'safety' && <SafetyTab onSelectFood={handleSelectFood} />}
         {activeTab === 'profile' && <ProfileTab />}
       </main>
