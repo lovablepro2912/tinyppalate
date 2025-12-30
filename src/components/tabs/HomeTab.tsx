@@ -28,7 +28,7 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl font-bold text-foreground">
-          Hi, {profile.baby_name}! 👋
+          Hi, {profile?.baby_name || 'Baby'}! 👋
         </h1>
         <p className="text-muted-foreground">Let's explore new tastes today</p>
       </motion.div>
