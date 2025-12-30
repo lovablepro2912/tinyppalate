@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { AllergenCard } from '@/components/AllergenCard';
 import { FoodWithState } from '@/types/food';
-import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, Search, X, Info, Baby, Heart, Phone } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, Search, X, Info, Baby, Heart } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
+import { PoisonControlBanner } from '@/components/PoisonControlBanner';
 
 interface SafetyTabProps {
   onSelectFood: (food: FoodWithState, showSafety: boolean) => void;
@@ -299,15 +300,15 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
               </section>
 
               {/* Emergency Note */}
-              <section className="bg-muted/50 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Phone className="w-5 h-5 text-primary" />
-                  <h3 className="font-bold text-foreground text-sm">Be Prepared</h3>
+              <section className="bg-muted/50 rounded-xl p-4 space-y-3">
+                <div>
+                  <h3 className="font-bold text-foreground text-sm mb-1">Be Prepared</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Always have your pediatrician's number and local emergency services readily available. 
+                    If your baby has been prescribed an EpiPen, know how to use it and keep it nearby during introductions.
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Always have your pediatrician's number and local emergency services readily available. 
-                  If your baby has been prescribed an EpiPen, know how to use it and keep it nearby during introductions.
-                </p>
+                <PoisonControlBanner />
               </section>
             </div>
           </ScrollArea>

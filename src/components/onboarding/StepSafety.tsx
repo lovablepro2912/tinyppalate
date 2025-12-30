@@ -1,4 +1,5 @@
 import { Eye, Scissors, Clock, Baby, Phone, AlertTriangle } from 'lucide-react';
+import { PoisonControlBanner } from '@/components/PoisonControlBanner';
 
 export function StepSafety() {
   const tips = [
@@ -63,11 +64,7 @@ export function StepSafety() {
         ))}
       </div>
 
-      <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-center">
-        <p className="text-sm text-red-600 dark:text-red-400 font-medium">
-          🚨 Poison Control: 1-800-222-1222
-        </p>
-      </div>
+      <PoisonControlBanner />
     </div>
   );
 }
