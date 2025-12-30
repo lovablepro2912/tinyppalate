@@ -60,13 +60,7 @@ export function OnboardingGuideSheet({ open, onOpenChange, babyName }: Onboardin
   return (
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl px-4 pb-6">
-        <SheetHeader className="relative">
-          <button
-            onClick={handleClose}
-            className="absolute right-0 top-0 p-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <SheetHeader>
           <SheetTitle className="text-center">App Guide</SheetTitle>
         </SheetHeader>
 
