@@ -6,9 +6,11 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, babyName: string) => Promise<{ error: Error | null }>;
+  needsOnboarding: boolean;
+  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  checkOnboardingStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,6 +19,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
+  const checkOnboardingStatus = async () => {
+    if (!user) {
+      setNeedsOnboarding(false);
+      return;
+    }
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('baby_name')
+        .eq('id', user.id)
+        .single();
+
+      // If baby_name is still the default 'Baby', user needs onboarding
+      setNeedsOnboarding(!profile || profile.baby_name === 'Baby');
+    } catch {
+      setNeedsOnboarding(true);
+    }
+  };
 
   useEffect(() => {
     // Get initial session
@@ -36,14 +59,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, babyName: string) => {
+  // Check onboarding status when user changes
+  useEffect(() => {
+    if (user) {
+      checkOnboardingStatus();
+    } else {
+      setNeedsOnboarding(false);
+    }
+  }, [user]);
+
+  const signUp = async (email: string, password: string) => {
+    const redirectUrl = `${window.location.origin}/onboarding`;
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: {
-          baby_name: babyName,
-        },
+        emailRedirectTo: redirectUrl,
       },
     });
     return { error: error as Error | null };
@@ -62,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, needsOnboarding, signUp, signIn, signOut, checkOnboardingStatus }}>
       {children}
     </AuthContext.Provider>
   );

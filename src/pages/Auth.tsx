@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Loader2, Sparkles } from 'lucide-react';
+import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,7 +13,6 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [babyName, setBabyName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp, signIn } = useAuth();
   const { toast } = useToast();
@@ -25,12 +24,13 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password, babyName || 'Baby');
+        const { error } = await signUp(email, password);
         if (error) throw error;
         toast({
-          title: "Welcome to TinyPalate! 🎉",
-          description: `Account created for tracking ${babyName || 'Baby'}'s food journey.`,
+          title: "Account created! 🎉",
+          description: "Let's set up your baby's profile.",
         });
+        navigate('/onboarding');
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
@@ -38,8 +38,8 @@ export default function Auth() {
           title: "Welcome back! 👋",
           description: "Let's continue tracking.",
         });
+        navigate('/');
       }
-      navigate('/');
     } catch (error: any) {
       toast({
         title: "Oops!",
@@ -52,7 +52,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent via-background to-primary/10 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-accent via-background to-primary/10 flex items-center justify-center p-4 relative overflow-hidden safe-area-all">
       {/* Floating Food Emojis */}
       {floatingFoods.map((emoji, i) => (
         <motion.div
@@ -113,30 +113,6 @@ export default function Auth() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {isSignUp && (
-              <motion.div 
-                className="space-y-2"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <span>👶</span> Baby's Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Little Emma"
-                    value={babyName}
-                    onChange={(e) => setBabyName(e.target.value)}
-                    className="pl-12 h-12 rounded-xl bg-secondary/50 border-border/50 focus:bg-card transition-colors"
-                    maxLength={50}
-                  />
-                </div>
-              </motion.div>
-            )}
-
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <span>📧</span> Email
@@ -170,6 +146,9 @@ export default function Auth() {
                   minLength={6}
                 />
               </div>
+              {isSignUp && (
+                <p className="text-xs text-muted-foreground">At least 6 characters</p>
+              )}
             </div>
 
             <Button
@@ -181,11 +160,11 @@ export default function Auth() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : isSignUp ? (
                 <span className="flex items-center gap-2">
-                  Let's Go! <span className="text-xl">🚀</span>
+                  Create Account <span className="text-xl">🚀</span>
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  Welcome Back <span className="text-xl">👋</span>
+                  Sign In <span className="text-xl">👋</span>
                 </span>
               )}
             </Button>
