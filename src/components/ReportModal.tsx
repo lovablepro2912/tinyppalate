@@ -126,7 +126,7 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
 
       onClose();
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      if (import.meta.env.DEV) console.error('Error generating PDF:', error);
     } finally {
       setIsGenerating(false);
     }
