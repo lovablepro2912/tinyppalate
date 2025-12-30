@@ -93,20 +93,20 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
                 <motion.button
                   key={food.id}
                   onClick={() => onSelectFood(food)}
-                  className="w-full flex items-center gap-3 bg-warning/10 border border-warning/30 rounded-2xl p-3 hover:bg-warning/20 transition-colors"
+                  className="w-full flex items-center gap-3 bg-info/10 border border-info/30 rounded-2xl p-3 hover:bg-info/20 transition-colors"
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <span className="text-2xl">{food.emoji}</span>
                   <div className="flex-1 min-w-0 text-left">
                     <p className="font-semibold text-foreground truncate">{food.name}</p>
-                    <p className="text-xs text-warning-foreground flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <CalendarClock className="w-3 h-3" />
                       {daysSince !== null ? `Last eaten ${daysSince} days ago` : 'Never eaten'}
                     </p>
                   </div>
-                  <span className="text-xs font-medium text-warning bg-warning/20 px-2 py-1 rounded-full whitespace-nowrap">
-                    Time to sustain!
+                  <span className="text-xs font-medium text-info bg-info/20 px-2 py-1 rounded-full whitespace-nowrap">
+                    Immunity Maintenance
                   </span>
                 </motion.button>
               );
@@ -131,16 +131,45 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
           <div className="space-y-2">
             {recentLogs.map(log => {
               const hasReaction = log.reaction_severity > 0;
+              const foodState = getFoodWithState(log.food.id);
+              const isAllergenInProgress = log.food.is_allergen && 
+                foodState.state?.status !== 'REACTION' &&
+                (foodState.state?.exposure_count || 0) < 3;
+              
+              const getStatusBadge = () => {
+                if (hasReaction) {
+                  return (
+                    <span className="text-xs font-medium text-danger bg-danger/20 px-2 py-1 rounded-full">
+                      {log.reaction_severity === 2 ? 'Severe' : 'Mild'}
+                    </span>
+                  );
+                }
+                if (isAllergenInProgress) {
+                  return (
+                    <span className="text-xs font-medium text-warning bg-warning/20 px-2 py-1 rounded-full">
+                      Exposure {foodState.state?.exposure_count || 0}/3
+                    </span>
+                  );
+                }
+                return (
+                  <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">
+                    Safe
+                  </span>
+                );
+              };
+
               return (
-                <motion.div
+                <motion.button
                   key={log.id}
+                  onClick={() => onSelectFood(foodState)}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl p-3 card-shadow",
+                    "w-full flex items-center gap-3 rounded-2xl p-3 card-shadow text-left",
                     hasReaction 
                       ? "bg-danger/10 border border-danger/20" 
                       : "bg-card"
                   )}
                   whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <span className="text-2xl">{log.food.emoji}</span>
                   <div className="flex-1 min-w-0">
@@ -149,17 +178,8 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
                       {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
                     </p>
                   </div>
-                  {!hasReaction && (
-                    <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">
-                      Safe
-                    </span>
-                  )}
-                  {hasReaction && (
-                    <span className="text-xs font-medium text-danger bg-danger/20 px-2 py-1 rounded-full">
-                      {log.reaction_severity === 2 ? 'Severe' : 'Mild'}
-                    </span>
-                  )}
-                </motion.div>
+                  {getStatusBadge()}
+                </motion.button>
               );
             })}
           </div>
