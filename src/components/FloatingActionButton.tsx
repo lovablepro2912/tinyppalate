@@ -9,14 +9,15 @@ export function FloatingActionButton({ onClick }: FloatingActionButtonProps) {
   return (
     <motion.button
       onClick={onClick}
-      className="fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground fab-shadow flex items-center justify-center"
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
+      className="fixed bottom-24 right-4 z-50 w-16 h-16 rounded-full bg-primary text-primary-foreground fab-shadow flex items-center justify-center touch-target no-select active:brightness-90 safe-area-right"
+      style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.92 }}
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 300 }}
+      transition={{ type: "spring", stiffness: 400, damping: 20 }}
     >
-      <Camera className="w-6 h-6" />
+      <Camera className="w-7 h-7" />
     </motion.button>
   );
 }

@@ -29,9 +29,9 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background safe-area-top scroll-smooth-ios">
       {/* Main Content */}
-      <main className="max-w-lg mx-auto">
+      <main className="max-w-lg mx-auto safe-area-x">
         {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'journal' && <JournalTab />}
