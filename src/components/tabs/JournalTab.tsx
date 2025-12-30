@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
-import { Check, AlertTriangle, Siren, Search, X } from 'lucide-react';
+import { Check, AlertTriangle, Siren, Search, X, FileText } from 'lucide-react';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { FoodLog, RefFood } from '@/types/food';
 import { EditLogModal } from '@/components/EditLogModal';
+import { ReportModal } from '@/components/ReportModal';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface LogWithFood extends FoodLog {
@@ -31,6 +33,7 @@ export function JournalTab() {
   const { logs, userFoodStates, foods } = useFoodContext();
   const [selectedLog, setSelectedLog] = useState<LogWithFood | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Get all logs with food data
   const logsWithFood = useMemo(() => {
@@ -73,11 +76,22 @@ export function JournalTab() {
   return (
     <div className="pb-24 pt-4">
       {/* Header */}
-      <div className="px-4 mb-4">
-        <h1 className="text-2xl font-bold text-foreground">Food Journal</h1>
-        <p className="text-muted-foreground text-sm">
-          {logsWithFood.length} {logsWithFood.length === 1 ? 'entry' : 'entries'} logged
-        </p>
+      <div className="px-4 mb-4 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Food Journal</h1>
+          <p className="text-muted-foreground text-sm">
+            {logsWithFood.length} {logsWithFood.length === 1 ? 'entry' : 'entries'} logged
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setShowReportModal(true)}
+          className="rounded-full"
+          title="Generate Report"
+        >
+          <FileText className="w-5 h-5" />
+        </Button>
       </div>
 
       {/* Search */}
@@ -199,6 +213,12 @@ export function JournalTab() {
       <EditLogModal
         log={selectedLog}
         onClose={() => setSelectedLog(null)}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
       />
     </div>
   );
