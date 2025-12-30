@@ -7,9 +7,10 @@ import { Progress } from '@/components/ui/progress';
 interface AllergenCardProps {
   food: FoodWithState;
   onClick?: () => void;
+  compact?: boolean;
 }
 
-export function AllergenCard({ food, onClick }: AllergenCardProps) {
+export function AllergenCard({ food, onClick, compact = false }: AllergenCardProps) {
   const state = food.state;
   const exposureCount = state?.exposure_count || 0;
   const status = state?.status || 'TO_TRY';
@@ -18,8 +19,8 @@ export function AllergenCard({ food, onClick }: AllergenCardProps) {
     if (status === 'REACTION') {
       return {
         bgClass: 'bg-danger/10 border-danger/30',
-        icon: <ShieldAlert className="w-5 h-5 text-danger" />,
-        label: 'Reaction Recorded',
+        icon: <ShieldAlert className="w-4 h-4 text-danger" />,
+        label: 'Reaction',
         labelClass: 'text-danger',
         showProgress: false,
       };
@@ -27,7 +28,7 @@ export function AllergenCard({ food, onClick }: AllergenCardProps) {
     if (status === 'SAFE') {
       return {
         bgClass: 'bg-success/10 border-success/30',
-        icon: <CheckCircle className="w-5 h-5 text-success" />,
+        icon: <CheckCircle className="w-4 h-4 text-success" />,
         label: 'Safe',
         labelClass: 'text-success',
         showProgress: false,
@@ -37,21 +38,77 @@ export function AllergenCard({ food, onClick }: AllergenCardProps) {
       return {
         bgClass: 'bg-warning/10 border-warning/30',
         icon: null,
-        label: `Exposure ${exposureCount}/3`,
+        label: `${exposureCount}/3`,
         labelClass: 'text-warning-foreground',
         showProgress: true,
       };
     }
     return {
       bgClass: 'bg-muted border-border',
-      icon: <Play className="w-4 h-4" />,
-      label: 'Start Introduction',
+      icon: <Play className="w-3 h-3" />,
+      label: 'Start',
       labelClass: 'text-muted-foreground',
       showProgress: false,
     };
   };
 
   const config = getStatusConfig();
+
+  if (compact) {
+    return (
+      <motion.button
+        onClick={status !== 'REACTION' ? onClick : undefined}
+        disabled={status === 'REACTION'}
+        className={cn(
+          "w-full p-3 rounded-xl border transition-all text-left",
+          config.bgClass,
+          status !== 'REACTION' && "hover:scale-[1.01] active:scale-[0.99]",
+          status === 'REACTION' && "opacity-80 cursor-not-allowed"
+        )}
+        whileHover={status !== 'REACTION' ? { y: -1 } : {}}
+        whileTap={status !== 'REACTION' ? { scale: 0.99 } : {}}
+      >
+        <div className="flex items-center gap-3">
+          <div className={cn(
+            "w-10 h-10 rounded-lg flex items-center justify-center text-xl",
+            "bg-card shadow-sm",
+            status === 'TO_TRY' && "grayscale-food"
+          )}>
+            {food.emoji}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-foreground text-sm">{food.name}</h4>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {config.showProgress ? (
+              <div className="flex items-center gap-2">
+                <Progress 
+                  value={(exposureCount / 3) * 100} 
+                  className="h-1.5 w-12 bg-warning/20"
+                />
+                <span className={cn("text-xs font-medium", config.labelClass)}>
+                  {config.label}
+                </span>
+              </div>
+            ) : (
+              <>
+                {config.icon}
+                <span className={cn("text-xs font-medium", config.labelClass)}>
+                  {config.label}
+                </span>
+              </>
+            )}
+          </div>
+
+          {status === 'REACTION' && (
+            <AlertTriangle className="w-4 h-4 text-danger flex-shrink-0" />
+          )}
+        </div>
+      </motion.button>
+    );
+  }
 
   return (
     <motion.button
