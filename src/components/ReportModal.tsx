@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { X, FileText, Download, Loader2, Calendar } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay, parseISO, isWithinInterval } from 'date-fns';
 import { pdf } from '@react-pdf/renderer';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -127,6 +128,7 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
       onClose();
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF. Please try again.');
     } finally {
       setIsGenerating(false);
     }
