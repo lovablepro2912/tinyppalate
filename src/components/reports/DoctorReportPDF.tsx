@@ -257,7 +257,7 @@ export function DoctorReportPDF({
                 >
                   <Text style={styles.colDate}>{format(parseISO(log.created_at), 'MM/dd/yy')}</Text>
                   <Text style={styles.colTime}>{format(parseISO(log.created_at), 'h:mm a')}</Text>
-                  <Text style={styles.colFood}>{log.foodEmoji} {log.foodName}</Text>
+                  <Text style={styles.colFood}>{log.foodName}</Text>
                   <Text style={styles.colStatus}>{getStatusLabel(log.reaction_severity)}</Text>
                   <Text style={styles.colNotes}>{extractNotes(log.notes) || '-'}</Text>
                 </View>
@@ -288,7 +288,7 @@ export function DoctorReportPDF({
                   style={log.reaction_severity === 2 ? styles.tableRowSevere : styles.tableRowMild}
                 >
                   <Text style={styles.colReactionDate}>{format(parseISO(log.created_at), 'MM/dd/yy')}</Text>
-                  <Text style={styles.colReactionFood}>{log.foodEmoji} {log.foodName}</Text>
+                  <Text style={styles.colReactionFood}>{log.foodName}</Text>
                   <Text style={styles.colReaction}>{getSeverityLabel(log.reaction_severity)}</Text>
                   <Text style={styles.colSymptoms}>{extractSymptoms(log.notes)}</Text>
                   <Text style={styles.colReactionNotes}>{extractNotes(log.notes)}</Text>
@@ -315,7 +315,7 @@ export function DoctorReportPDF({
                     : styles.allergenCard
                 }
               >
-                <Text style={styles.allergenName}>{allergen.emoji} {allergen.name}</Text>
+                <Text style={styles.allergenName}>{allergen.name}</Text>
                 <Text style={styles.allergenStatus}>{getAllergenStatusText(allergen)}</Text>
               </View>
             ))}
