@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { FoodWithState } from '@/types/food';
-import { categories } from '@/data/mockFoods';
 import { cn } from '@/lib/utils';
 
 interface FoodPickerModalProps {
@@ -15,9 +14,15 @@ interface FoodPickerModalProps {
 }
 
 export function FoodPickerModal({ isOpen, onClose, onSelectFood }: FoodPickerModalProps) {
-  const { getFoodsWithStates } = useFoodContext();
+  const { getFoodsWithStates, foods } = useFoodContext();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Get unique categories from foods
+  const categories = useMemo(() => {
+    const cats = [...new Set(foods.map(f => f.category))];
+    return cats.sort();
+  }, [foods]);
 
   const allFoods = getFoodsWithStates();
   
@@ -63,6 +68,7 @@ export function FoodPickerModal({ isOpen, onClose, onSelectFood }: FoodPickerMod
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search foods..."
                 className="pl-10 rounded-xl bg-secondary border-0"
+                maxLength={100}
               />
             </div>
 
