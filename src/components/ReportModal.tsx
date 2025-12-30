@@ -66,9 +66,8 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
       })
       .map(f => f.name);
 
-    // Get reaction logs with food info
-    const reactionLogs = filteredLogs
-      .filter(log => log.reaction_severity > 0)
+    // Get ALL logs with food info (for complete feeding history)
+    const allLogs = filteredLogs
       .map(log => {
         const state = userFoodStates.find(s => s.id === log.user_food_state_id);
         const food = foods.find(f => f.id === state?.food_id);
@@ -83,6 +82,9 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
       })
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+    // Get reaction logs only (for reaction details section)
+    const reactionLogs = allLogs.filter(log => log.reaction_severity > 0);
+
     // Get allergen statuses
     const allergenStatuses = getAllergenFoods().map(allergen => ({
       name: allergen.name,
@@ -91,7 +93,7 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
       exposureCount: allergen.state?.exposure_count || 0,
     }));
 
-    return { safeFoods, reactionLogs, allergenStatuses };
+    return { safeFoods, allLogs, reactionLogs, allergenStatuses };
   }, [logs, foods, userFoodStates, startDate, endDate, getAllergenFoods]);
 
   const handleGeneratePDF = async () => {
@@ -104,6 +106,7 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
           startDate={startDate}
           endDate={endDate}
           safeFoods={reportData.safeFoods}
+          allLogs={reportData.allLogs}
           reactionLogs={reportData.reactionLogs}
           allergenStatuses={reportData.allergenStatuses}
         />
@@ -231,6 +234,7 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
             <p className="text-sm font-medium text-foreground">Report Summary</p>
             <div className="text-xs text-muted-foreground space-y-1">
               <p>📅 {format(startDate, 'MMM d, yyyy')} - {format(endDate, 'MMM d, yyyy')}</p>
+              <p>📋 {reportData.allLogs.length} feeding entries</p>
               <p>✅ {reportData.safeFoods.length} safe foods</p>
               <p>⚠️ {reportData.reactionLogs.length} reaction events</p>
               <p>🥜 {reportData.allergenStatuses.length} allergens tracked</p>
