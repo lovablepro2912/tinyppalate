@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { FoodCard } from '@/components/FoodCard';
+import { FoodDetailSheet } from '@/components/FoodDetailSheet';
 import { FoodWithState } from '@/types/food';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -28,12 +29,25 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFoodForDetail, setSelectedFoodForDetail] = useState<FoodWithState | null>(null);
   
   const allFoods = getFoodsWithStates();
   const triedCount = getTriedCount();
 
   // Set default category once foods are loaded
   const currentCategory = selectedCategory || categories[0] || '';
+
+  const handleFoodClick = (food: FoodWithState) => {
+    setSelectedFoodForDetail(food);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedFoodForDetail(null);
+  };
+
+  const handleLogFromDetail = (food: FoodWithState) => {
+    onSelectFood(food);
+  };
   
   const foodsByCategory = useMemo(() => {
     const result: Record<string, FoodWithState[]> = {
@@ -188,7 +202,7 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
           >
             <FoodCard 
               food={food}
-              onClick={() => onSelectFood(food)}
+              onClick={() => handleFoodClick(food)}
               size="lg"
             />
           </motion.div>
@@ -206,6 +220,13 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
           <p className="text-muted-foreground">No foods found for "{searchQuery}"</p>
         </motion.div>
       )}
+
+      {/* Food Detail Sheet */}
+      <FoodDetailSheet
+        food={selectedFoodForDetail}
+        onClose={handleCloseDetail}
+        onLogFood={handleLogFromDetail}
+      />
     </div>
   );
 }
