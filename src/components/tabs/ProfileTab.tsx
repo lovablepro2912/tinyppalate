@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
-import { Baby, Calendar, Trophy, TrendingUp } from 'lucide-react';
+import { Baby, Calendar, Trophy, TrendingUp, BookOpen } from 'lucide-react';
 import { differenceInMonths, differenceInDays, format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { OnboardingGuideSheet } from '@/components/onboarding/OnboardingGuideSheet';
 
 export function ProfileTab() {
+  const [guideOpen, setGuideOpen] = useState(false);
   const { profile, getTriedCount, getAllergenFoods, logs } = useFoodContext();
   
   const birthDate = new Date(profile.birth_date);
@@ -97,6 +101,29 @@ export function ProfileTab() {
           {100 - triedCount} more foods until the 100 Foods milestone! 🎉
         </p>
       </motion.div>
+
+      {/* View Guide Button */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="mt-6"
+      >
+        <Button
+          variant="outline"
+          onClick={() => setGuideOpen(true)}
+          className="w-full h-12 rounded-xl gap-2"
+        >
+          <BookOpen className="w-4 h-4" />
+          View App Guide
+        </Button>
+      </motion.div>
+
+      <OnboardingGuideSheet 
+        open={guideOpen} 
+        onOpenChange={setGuideOpen} 
+        babyName={profile.baby_name}
+      />
     </div>
   );
 }
