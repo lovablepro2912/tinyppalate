@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
-import { Check, AlertTriangle, Search, X } from 'lucide-react';
+import { Check, AlertTriangle, Siren, Search, X } from 'lucide-react';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { FoodLog, RefFood } from '@/types/food';
 import { EditLogModal } from '@/components/EditLogModal';
@@ -149,7 +149,8 @@ export function JournalTab() {
                       className={cn(
                         "w-full flex items-center gap-4 p-4 rounded-xl transition-all",
                         "bg-card border border-border hover:bg-accent/50",
-                        log.reaction_severity > 0 && "bg-danger/10 border-danger/30"
+                        log.reaction_severity === 1 && "bg-warning/10 border-warning/30",
+                        log.reaction_severity === 2 && "bg-danger/20 border-danger/50"
                       )}
                     >
                       {/* Food Icon */}
@@ -163,17 +164,25 @@ export function JournalTab() {
                         <p className="text-sm text-muted-foreground">{formatTime(log.created_at)}</p>
                       </div>
 
-                      {/* Status Badge */}
+                      {/* Status Badge - Dynamic based on reaction_severity */}
                       <div>
-                        {log.reaction_severity > 0 ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-danger/20 text-danger">
+                        {log.reaction_severity === 2 ? (
+                          // Severe - Dominant filled red badge
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-danger text-white shadow-md">
+                            <Siren className="w-3.5 h-3.5" />
+                            Severe
+                          </span>
+                        ) : log.reaction_severity === 1 ? (
+                          // Mild - Yellow/Orange badge
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-warning/20 text-warning border border-warning/30">
                             <AlertTriangle className="w-3 h-3" />
-                            Reaction!
+                            Mild
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-safe/20 text-safe">
+                          // Safe - Subtle green badge
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-safe border border-safe/30 bg-safe/10">
                             <Check className="w-3 h-3" />
-                            Eaten
+                            Safe
                           </span>
                         )}
                       </div>
