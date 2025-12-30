@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { RefFood, UserFoodState, FoodLog, Profile, FoodStatus, FoodWithState } from '@/types/food';
+import { toast } from 'sonner';
 
 interface LogUpdate {
   reaction_severity?: 0 | 1 | 2;
@@ -98,6 +99,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       setLogs((logsData || []).map(castFoodLog));
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error fetching data:', error);
+      toast.error('Failed to load data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -193,6 +195,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       await refreshData();
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error logging food:', error);
+      toast.error('Failed to log food. Please try again.');
       throw error;
     }
   }, [foods, userFoodStates, user, refreshData]);
@@ -211,6 +214,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       await refreshData();
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error updating log:', error);
+      toast.error('Failed to update log. Please try again.');
       throw error;
     }
   }, [refreshData]);
@@ -225,6 +229,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       await refreshData();
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error deleting log:', error);
+      toast.error('Failed to delete log. Please try again.');
       throw error;
     }
   }, [refreshData]);
