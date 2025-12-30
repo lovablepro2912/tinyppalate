@@ -61,15 +61,18 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
   const getCategoryEmoji = (cat: string) => {
     const categoryEmojis: Record<string, string> = {
       'All': '📋',
+      'Fruit': '🍎',
       'Fruits': '🍎',
+      'Vegetable': '🥦',
       'Vegetables': '🥦',
+      'Protein': '🍗',
       'Proteins': '🍗',
       'Grains': '🌾',
       'Dairy': '🧀',
       'Nuts & Seeds': '🥜',
+      'Legumes': '🫘',
       'Seafood': '🐟',
       'Eggs': '🥚',
-      'Legumes': '🫘',
     };
     return categoryEmojis[cat] || '🍽️';
   };
