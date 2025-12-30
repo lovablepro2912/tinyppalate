@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FoodProvider } from '@/contexts/FoodContext';
 import { BottomNav } from '@/components/BottomNav';
 import { FloatingActionButton } from '@/components/FloatingActionButton';
@@ -16,6 +16,11 @@ function AppContent() {
   const [showPicker, setShowPicker] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodWithState | null>(null);
   const [showSafetyWarning, setShowSafetyWarning] = useState(false);
+
+  // Scroll to top when changing tabs
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
 
   const handleSelectFood = (food: FoodWithState, showSafety: boolean = false) => {
     setSelectedFood(food);
@@ -35,7 +40,7 @@ function AppContent() {
         {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'journal' && <JournalTab />}
-        {activeTab === 'safety' && <SafetyTab onSelectFood={handleSelectFood} />}
+        {activeTab === 'allergen' && <SafetyTab onSelectFood={handleSelectFood} />}
         {activeTab === 'profile' && <ProfileTab />}
       </main>
 

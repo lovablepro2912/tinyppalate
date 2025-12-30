@@ -1,4 +1,4 @@
-import { Home, Grid3X3, ScrollText, ShieldCheck, User } from 'lucide-react';
+import { Home, Grid3X3, ScrollText, AlertTriangle, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -11,7 +11,7 @@ const tabs = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'dex', label: 'Food Dex', icon: Grid3X3 },
   { id: 'journal', label: 'Journal', icon: ScrollText },
-  { id: 'safety', label: 'Safety', icon: ShieldCheck },
+  { id: 'allergen', label: 'Allergen', icon: AlertTriangle },
   { id: 'profile', label: 'Profile', icon: User },
 ];
 
