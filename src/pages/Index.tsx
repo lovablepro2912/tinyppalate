@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FoodProvider } from '@/contexts/FoodContext';
 import { BottomNav } from '@/components/BottomNav';
-import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { FoodPickerModal } from '@/components/FoodPickerModal';
 import { LogFoodModal } from '@/components/LogFoodModal';
 import { HomeTab } from '@/components/tabs/HomeTab';
@@ -43,11 +42,6 @@ function AppContent() {
         {activeTab === 'allergen' && <SafetyTab onSelectFood={handleSelectFood} />}
         {activeTab === 'profile' && <ProfileTab />}
       </main>
-
-      {/* FAB */}
-      {activeTab === 'home' && (
-        <FloatingActionButton onClick={() => setShowPicker(true)} />
-      )}
 
       {/* Bottom Nav */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
