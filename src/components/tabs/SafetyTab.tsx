@@ -2,8 +2,11 @@ import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { AllergenCard } from '@/components/AllergenCard';
 import { FoodWithState } from '@/types/food';
-import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, Search, X } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, Search, X, Info, Baby, Heart, Phone } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
@@ -25,6 +28,7 @@ interface AllergenGroup {
 export function SafetyTab({ onSelectFood }: SafetyTabProps) {
   const { getAllergenFoods } = useFoodContext();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showInfoSheet, setShowInfoSheet] = useState(false);
   
   const allergens = getAllergenFoods();
   const safeCount = allergens.filter(f => f.state?.status === 'SAFE').length;
@@ -138,10 +142,177 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
           <ShieldCheck className="w-6 h-6 text-primary" />
           <h1 className="text-2xl font-bold text-foreground">Allergen Protocol</h1>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground mb-2">
           Safely introduce the Top 9 allergens with our guided protocol
         </p>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-primary hover:text-primary/80 p-0 h-auto font-medium"
+          onClick={() => setShowInfoSheet(true)}
+        >
+          <Info className="w-4 h-4 mr-1" />
+          Learn more about the protocol
+        </Button>
       </motion.div>
+
+      {/* Allergen Info Sheet */}
+      <Sheet open={showInfoSheet} onOpenChange={setShowInfoSheet}>
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
+          <SheetHeader className="text-left pb-2">
+            <SheetTitle className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" />
+              Allergen Introduction Guide
+            </SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(85vh-80px)] pr-4">
+            <div className="space-y-6 pb-8">
+              {/* What is the Allergen Protocol */}
+              <section>
+                <div className="flex items-center gap-2 mb-2">
+                  <Baby className="w-5 h-5 text-primary" />
+                  <h3 className="font-bold text-foreground">What is the Allergen Protocol?</h3>
+                </div>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    The allergen introduction protocol is based on landmark research (like the LEAP study) 
+                    showing that <span className="text-foreground font-medium">early, consistent exposure</span> to 
+                    common allergens can significantly reduce the risk of developing food allergies.
+                  </p>
+                  <p>
+                    The Top 9 allergens account for 90% of all food allergies: <span className="font-medium text-foreground">
+                    Peanut, Egg, Dairy, Soy, Wheat, Fish, Shellfish, Sesame,</span> and <span className="font-medium text-foreground">Tree Nuts</span>.
+                  </p>
+                </div>
+              </section>
+
+              {/* How the Protocol Works */}
+              <section>
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="w-5 h-5 text-success" />
+                  <h3 className="font-bold text-foreground">How It Works</h3>
+                </div>
+                <div className="text-sm text-muted-foreground space-y-3">
+                  <div className="bg-muted/50 rounded-xl p-3 space-y-2">
+                    <p><span className="font-bold text-foreground">Step 1:</span> Start with a tiny amount of the allergen (a lick or small taste)</p>
+                    <p><span className="font-bold text-foreground">Step 2:</span> Wait and observe for 2+ hours after first exposure</p>
+                    <p><span className="font-bold text-foreground">Step 3:</span> If no reaction, continue offering 2-3 times per week</p>
+                    <p><span className="font-bold text-foreground">Step 4:</span> After 6+ successful exposures, mark as "Safe"</p>
+                  </div>
+                  <p className="text-xs italic">
+                    Your baby's status progresses: To Try → Trying → Safe
+                  </p>
+                </div>
+              </section>
+
+              {/* Safety Guidelines */}
+              <section>
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart className="w-5 h-5 text-danger" />
+                  <h3 className="font-bold text-foreground">Safety Guidelines</h3>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <span><span className="font-medium text-foreground">Introduce at home</span> — never at daycare, restaurants, or while traveling</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <span><span className="font-medium text-foreground">Morning is best</span> — you can monitor throughout the day</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <span><span className="font-medium text-foreground">One new allergen at a time</span> — wait 3-5 days between new allergens</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <span><span className="font-medium text-foreground">Stay focused</span> — have one adult dedicated to watching baby during and after feeding</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <span><span className="font-medium text-foreground">Baby should be healthy</span> — avoid introducing during illness</span>
+                    </li>
+                  </ul>
+                </div>
+              </section>
+
+              {/* Signs of a Reaction */}
+              <section>
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-5 h-5 text-warning" />
+                  <h3 className="font-bold text-foreground">Signs of a Reaction</h3>
+                </div>
+                <div className="text-sm space-y-3">
+                  <div className="bg-warning/10 border border-warning/20 rounded-xl p-3">
+                    <p className="font-medium text-foreground mb-2">Mild Reactions (call pediatrician):</p>
+                    <ul className="text-muted-foreground space-y-1 text-xs">
+                      <li>• Hives or skin rash around mouth/face</li>
+                      <li>• Mild swelling of lips or eyes</li>
+                      <li>• Stomach upset, vomiting, or diarrhea</li>
+                      <li>• Runny nose or sneezing</li>
+                    </ul>
+                  </div>
+                  <div className="bg-danger/10 border border-danger/20 rounded-xl p-3">
+                    <p className="font-medium text-foreground mb-2">Severe Reactions (call 911):</p>
+                    <ul className="text-muted-foreground space-y-1 text-xs">
+                      <li>• Difficulty breathing or wheezing</li>
+                      <li>• Widespread hives over the body</li>
+                      <li>• Repeated vomiting</li>
+                      <li>• Sudden lethargy or unresponsiveness</li>
+                      <li>• Swelling of tongue or throat</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              {/* Tips for Success */}
+              <section>
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="w-5 h-5 text-primary" />
+                  <h3 className="font-bold text-foreground">Tips for Success</h3>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="text-success mt-1">✓</span>
+                      <span>Mix allergens into foods your baby already loves</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-success mt-1">✓</span>
+                      <span>Be consistent — sporadic exposure may actually increase sensitization risk</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-success mt-1">✓</span>
+                      <span>Don't give up after one refusal — babies often need 10+ tries</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-success mt-1">✓</span>
+                      <span>Keep a log of exposures and reactions (this app helps!)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-success mt-1">✓</span>
+                      <span>Consult your pediatrician if you have a family history of allergies</span>
+                    </li>
+                  </ul>
+                </div>
+              </section>
+
+              {/* Emergency Note */}
+              <section className="bg-muted/50 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Phone className="w-5 h-5 text-primary" />
+                  <h3 className="font-bold text-foreground text-sm">Be Prepared</h3>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Always have your pediatrician's number and local emergency services readily available. 
+                  If your baby has been prescribed an EpiPen, know how to use it and keep it nearby during introductions.
+                </p>
+              </section>
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
 
       {/* Stats */}
       <motion.div
