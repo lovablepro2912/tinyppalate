@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
-import { Check, AlertTriangle } from 'lucide-react';
+import { Check, AlertTriangle, Search, X } from 'lucide-react';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { FoodLog, RefFood } from '@/types/food';
 import { EditLogModal } from '@/components/EditLogModal';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 interface LogWithFood extends FoodLog {
@@ -29,6 +30,7 @@ function formatTime(dateStr: string): string {
 export function JournalTab() {
   const { logs, userFoodStates, foods } = useFoodContext();
   const [selectedLog, setSelectedLog] = useState<LogWithFood | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Get all logs with food data
   const logsWithFood = useMemo(() => {
@@ -43,9 +45,18 @@ export function JournalTab() {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }, [logs, userFoodStates, foods]);
 
-  // Group logs by date
+  // Filter logs by search query
+  const filteredLogs = useMemo(() => {
+    if (!searchQuery.trim()) return logsWithFood;
+    const query = searchQuery.toLowerCase().trim();
+    return logsWithFood.filter(log => 
+      log.food.name.toLowerCase().includes(query)
+    );
+  }, [logsWithFood, searchQuery]);
+
+  // Group filtered logs by date
   const groupedLogs = useMemo(() => {
-    return logsWithFood.reduce<GroupedLogs>((groups, log) => {
+    return filteredLogs.reduce<GroupedLogs>((groups, log) => {
       const dateKey = format(parseISO(log.created_at), 'yyyy-MM-dd');
       if (!groups[dateKey]) {
         groups[dateKey] = [];
@@ -53,7 +64,7 @@ export function JournalTab() {
       groups[dateKey].push(log);
       return groups;
     }, {});
-  }, [logsWithFood]);
+  }, [filteredLogs]);
 
   const sortedDates = Object.keys(groupedLogs).sort((a, b) => 
     new Date(b).getTime() - new Date(a).getTime()
@@ -62,19 +73,51 @@ export function JournalTab() {
   return (
     <div className="pb-24 pt-4">
       {/* Header */}
-      <div className="px-4 mb-6">
+      <div className="px-4 mb-4">
         <h1 className="text-2xl font-bold text-foreground">Food Journal</h1>
         <p className="text-muted-foreground text-sm">
           {logsWithFood.length} {logsWithFood.length === 1 ? 'entry' : 'entries'} logged
         </p>
       </div>
 
+      {/* Search */}
+      <div className="px-4 mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search foods..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-10"
+            maxLength={100}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Timeline */}
       <div className="px-4">
         {sortedDates.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <p className="text-lg">No entries yet</p>
-            <p className="text-sm mt-1">Start logging foods to see your journal</p>
+            {searchQuery ? (
+              <>
+                <p className="text-lg">No results for "{searchQuery}"</p>
+                <p className="text-sm mt-1">Try a different search term</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg">No entries yet</p>
+                <p className="text-sm mt-1">Start logging foods to see your journal</p>
+              </>
+            )}
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
