@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { ProgressRing } from '@/components/ProgressRing';
 import { FoodCard } from '@/components/FoodCard';
+import { DailyBiteWidget } from '@/components/DailyBiteWidget';
 import { Sparkles, Clock, ShieldCheck, CalendarClock } from 'lucide-react';
 import { FoodWithState } from '@/types/food';
 import { formatDistanceToNow, differenceInDays } from 'date-fns';
@@ -72,6 +73,9 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
           </div>
         </motion.section>
       )}
+
+      {/* Daily Bite Widget */}
+      <DailyBiteWidget onSelectFood={onSelectFood} />
 
       {/* Allergen Maintenance Section */}
       {maintenanceNeeded.length > 0 && (

@@ -52,6 +52,27 @@ export type Database = {
           },
         ]
       }
+      general_tips: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          text: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          text: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          text?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           baby_name: string
@@ -111,6 +132,41 @@ export type Database = {
           serving_guide?: Json | null
         }
         Relationships: []
+      }
+      tip_rules: {
+        Row: {
+          action_food_id: number | null
+          action_label: string | null
+          created_at: string
+          id: string
+          tip_text: string
+          trigger_category: string
+        }
+        Insert: {
+          action_food_id?: number | null
+          action_label?: string | null
+          created_at?: string
+          id?: string
+          tip_text: string
+          trigger_category: string
+        }
+        Update: {
+          action_food_id?: number | null
+          action_label?: string | null
+          created_at?: string
+          id?: string
+          tip_text?: string
+          trigger_category?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tip_rules_action_food_id_fkey"
+            columns: ["action_food_id"]
+            isOneToOne: false
+            referencedRelation: "ref_foods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_food_states: {
         Row: {
