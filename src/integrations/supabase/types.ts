@@ -80,29 +80,35 @@ export type Database = {
         Row: {
           allergen_family: string | null
           category: string
+          choking_hazard_level: string | null
           created_at: string
           emoji: string
           id: number
           is_allergen: boolean
           name: string
+          serving_guide: Json | null
         }
         Insert: {
           allergen_family?: string | null
           category: string
+          choking_hazard_level?: string | null
           created_at?: string
           emoji?: string
           id?: number
           is_allergen?: boolean
           name: string
+          serving_guide?: Json | null
         }
         Update: {
           allergen_family?: string | null
           category?: string
+          choking_hazard_level?: string | null
           created_at?: string
           emoji?: string
           id?: number
           is_allergen?: boolean
           name?: string
+          serving_guide?: Json | null
         }
         Relationships: []
       }
