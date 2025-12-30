@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useFoodContext } from '@/contexts/FoodContext';
+import { useHaptics } from '@/hooks/useHaptics';
 import { cn } from '@/lib/utils';
 
 interface LogFoodModalProps {
@@ -21,6 +22,7 @@ const allSymptoms = [...mildSymptoms, ...severeSymptoms];
 
 export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFoodModalProps) {
   const { logFood, profile } = useFoodContext();
+  const { success, error: hapticError } = useHaptics();
   const [step, setStep] = useState<'safety' | 'log'>(showSafetyWarning ? 'safety' : 'log');
   const [hasReaction, setHasReaction] = useState(false);
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
@@ -50,6 +52,7 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
       ? `Symptoms: ${selectedSymptoms.join(', ')}. ${notes}` 
       : notes;
     logFood(food.id, hasReaction, autoSeverity, symptomNotes);
+    hasReaction ? hapticError() : success();
     onClose();
   };
 
