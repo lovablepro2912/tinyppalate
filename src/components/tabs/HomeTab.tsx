@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { ProgressRing } from '@/components/ProgressRing';
 import { FoodCard } from '@/components/FoodCard';
+import { FoodDetailSheet } from '@/components/FoodDetailSheet';
 import { DailyBiteWidget } from '@/components/DailyBiteWidget';
 import { Sparkles, Clock, ShieldCheck, CalendarClock } from 'lucide-react';
 import { FoodWithState } from '@/types/food';
@@ -15,10 +17,25 @@ interface HomeTabProps {
 export function HomeTab({ onSelectFood }: HomeTabProps) {
   const { profile, getTriedCount, getNextSuggestions, getRecentLogs, getFoodWithState, getAllergenMaintenanceNeeded } = useFoodContext();
   
+  const [selectedFoodForDetail, setSelectedFoodForDetail] = useState<FoodWithState | null>(null);
+  
   const triedCount = getTriedCount();
   const suggestions = getNextSuggestions(4);
   const recentLogs = getRecentLogs(3);
   const maintenanceNeeded = getAllergenMaintenanceNeeded();
+
+  const handleFoodClick = (food: FoodWithState) => {
+    setSelectedFoodForDetail(food);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedFoodForDetail(null);
+  };
+
+  const handleLogFromDetail = (food: FoodWithState) => {
+    setSelectedFoodForDetail(null);
+    onSelectFood(food);
+  };
 
   return (
     <div className="pb-24 px-4 space-y-6">
@@ -65,7 +82,7 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
               <FoodCard 
                 key={food.id} 
                 food={getFoodWithState(food.id)}
-                onClick={() => onSelectFood(getFoodWithState(food.id))}
+                onClick={() => handleFoodClick(getFoodWithState(food.id))}
                 showStatus={false}
                 forceColor={true}
               />
@@ -75,7 +92,14 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
       )}
 
       {/* Daily Bite Widget */}
-      <DailyBiteWidget onSelectFood={onSelectFood} />
+      <DailyBiteWidget onSelectFood={handleLogFromDetail} />
+
+      {/* Food Detail Sheet */}
+      <FoodDetailSheet
+        food={selectedFoodForDetail}
+        onClose={handleCloseDetail}
+        onLogFood={handleLogFromDetail}
+      />
 
       {/* Allergen Maintenance Section */}
       {maintenanceNeeded.length > 0 && (
