@@ -12,7 +12,7 @@ export default function Onboarding() {
   const [babyName, setBabyName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, checkOnboardingStatus } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -40,13 +40,14 @@ export default function Onboarding() {
     setLoading(true);
 
     try {
+      // Use upsert in case profile doesn't exist yet
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user?.id,
           baby_name: babyName.trim(),
-          birth_date: birthDate || null,
-        })
-        .eq('id', user?.id);
+          birth_date: birthDate,
+        }, { onConflict: 'id' });
 
       if (error) throw error;
 
@@ -55,6 +56,8 @@ export default function Onboarding() {
         description: "Let's start your food adventure!",
       });
       
+      // Refresh onboarding status and navigate
+      await checkOnboardingStatus();
       navigate('/');
     } catch (error: any) {
       toast({
