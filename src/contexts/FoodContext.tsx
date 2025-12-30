@@ -97,7 +97,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       
       setLogs((logsData || []).map(castFoodLog));
     } catch (error) {
-      console.error('Error fetching data:', error);
+      if (import.meta.env.DEV) console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -192,7 +192,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       // Refresh data
       await refreshData();
     } catch (error) {
-      console.error('Error logging food:', error);
+      if (import.meta.env.DEV) console.error('Error logging food:', error);
       throw error;
     }
   }, [foods, userFoodStates, user, refreshData]);
@@ -210,7 +210,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       
       await refreshData();
     } catch (error) {
-      console.error('Error updating log:', error);
+      if (import.meta.env.DEV) console.error('Error updating log:', error);
       throw error;
     }
   }, [refreshData]);
@@ -224,7 +224,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       
       await refreshData();
     } catch (error) {
-      console.error('Error deleting log:', error);
+      if (import.meta.env.DEV) console.error('Error deleting log:', error);
       throw error;
     }
   }, [refreshData]);
