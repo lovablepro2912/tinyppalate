@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, Calendar, Loader2, Sparkles } from 'lucide-react';
+import { User, Calendar, Loader2, Sparkles, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +12,7 @@ export default function Onboarding() {
   const [babyName, setBabyName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -149,9 +149,19 @@ export default function Onboarding() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Track 100 foods before age 1 🥕🍎🥦
-        </p>
+        <div className="text-center mt-6 space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Track 100 foods before age 1 🥕🍎🥦
+          </p>
+          <button
+            type="button"
+            onClick={signOut}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mx-auto"
+          >
+            <LogOut className="w-3 h-3" />
+            Use a different account
+          </button>
+        </div>
       </motion.div>
     </div>
   );
