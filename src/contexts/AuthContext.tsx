@@ -20,24 +20,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   const checkOnboardingStatus = async () => {
     if (!user) {
       setNeedsOnboarding(false);
+      setOnboardingChecked(true);
       return;
     }
 
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('baby_name')
         .eq('id', user.id)
         .single();
 
+      if (error) {
+        // Profile doesn't exist yet - user needs onboarding
+        setNeedsOnboarding(true);
+        setOnboardingChecked(true);
+        return;
+      }
+
       // If baby_name is still the default 'Baby', user needs onboarding
       setNeedsOnboarding(!profile || profile.baby_name === 'Baby');
+      setOnboardingChecked(true);
     } catch {
       setNeedsOnboarding(true);
+      setOnboardingChecked(true);
     }
   };
 
@@ -46,6 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (!session?.user) {
+        setOnboardingChecked(true);
+      }
       setLoading(false);
     });
 
@@ -53,6 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (!session?.user) {
+        setNeedsOnboarding(false);
+        setOnboardingChecked(true);
+      } else {
+        setOnboardingChecked(false); // Reset to trigger new check
+      }
       setLoading(false);
     });
 
@@ -61,12 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check onboarding status when user changes
   useEffect(() => {
-    if (user) {
+    if (user && !onboardingChecked) {
       checkOnboardingStatus();
-    } else {
-      setNeedsOnboarding(false);
     }
-  }, [user]);
+  }, [user, onboardingChecked]);
+
+  // Combined loading state - wait for both auth and onboarding check
+  const isLoading = loading || (user !== null && !onboardingChecked);
 
   const signUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/onboarding`;
@@ -94,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, needsOnboarding, signUp, signIn, signOut, checkOnboardingStatus }}>
+    <AuthContext.Provider value={{ user, session, loading: isLoading, needsOnboarding, signUp, signIn, signOut, checkOnboardingStatus }}>
       {children}
     </AuthContext.Provider>
   );
