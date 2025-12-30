@@ -2,10 +2,11 @@ import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { AllergenCard } from '@/components/AllergenCard';
 import { FoodWithState } from '@/types/food';
-import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, Search, X } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { Input } from '@/components/ui/input';
 
 interface SafetyTabProps {
   onSelectFood: (food: FoodWithState, showSafety: boolean) => void;
@@ -23,19 +24,12 @@ interface AllergenGroup {
 
 export function SafetyTab({ onSelectFood }: SafetyTabProps) {
   const { getAllergenFoods } = useFoodContext();
+  const [searchQuery, setSearchQuery] = useState('');
   
   const allergens = getAllergenFoods();
   const safeCount = allergens.filter(f => f.state?.status === 'SAFE').length;
   const tryingCount = allergens.filter(f => f.state?.status === 'TRYING').length;
   const reactionCount = allergens.filter(f => f.state?.status === 'REACTION').length;
-
-  // Group allergens by family
-  const groupedAllergens = allergens.reduce<Record<string, FoodWithState[]>>((acc, food) => {
-    const family = food.allergen_family || 'Other';
-    if (!acc[family]) acc[family] = [];
-    acc[family].push(food);
-    return acc;
-  }, {});
 
   // Calculate group status
   const getGroupStatus = (foods: FoodWithState[]): GroupStatus => {
@@ -51,32 +45,49 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
     return 'to_try';
   };
 
-  // Create ordered groups with status
+  // Family order for display
   const familyOrder = ['Peanut', 'Egg', 'Dairy', 'Soy', 'Wheat', 'Fish', 'Shellfish', 'Sesame', 'Tree Nut'];
-  
-  const orderedGroups: AllergenGroup[] = familyOrder
-    .filter(family => groupedAllergens[family])
-    .map(family => {
-      const foods = groupedAllergens[family];
-      return {
-        family,
-        foods,
-        status: getGroupStatus(foods),
-        safeCount: foods.filter(f => f.state?.status === 'SAFE').length,
-        totalCount: foods.length
-      };
-    });
 
-  // Track which groups are open
+  // Filter and group allergens based on search
+  const filteredGroups = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    
+    // Group allergens by family
+    const groupedAllergens = allergens.reduce<Record<string, FoodWithState[]>>((acc, food) => {
+      const family = food.allergen_family || 'Other';
+      if (!acc[family]) acc[family] = [];
+      acc[family].push(food);
+      return acc;
+    }, {});
+
+    // Create ordered groups and filter by search
+    return familyOrder
+      .filter(family => groupedAllergens[family])
+      .map(family => {
+        const allFoods = groupedAllergens[family];
+        // Filter foods within group if searching
+        const filteredFoods = query 
+          ? allFoods.filter(f => 
+              f.name.toLowerCase().includes(query) || 
+              family.toLowerCase().includes(query)
+            )
+          : allFoods;
+        
+        return {
+          family,
+          foods: filteredFoods,
+          allFoods, // Keep original for status calculation
+          status: getGroupStatus(allFoods),
+          safeCount: allFoods.filter(f => f.state?.status === 'SAFE').length,
+          totalCount: allFoods.length
+        };
+      })
+      .filter(group => group.foods.length > 0); // Only show groups with matching foods
+  }, [allergens, searchQuery]);
+
+  // Track which groups are open - default to all open
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
-    // Default open groups that are in progress
-    const inProgress = new Set<string>();
-    orderedGroups.forEach(g => {
-      if (g.status === 'trying' || g.status === 'to_try') {
-        inProgress.add(g.family);
-      }
-    });
-    return inProgress;
+    return new Set(familyOrder);
   });
 
   const toggleGroup = (family: string) => {
@@ -158,6 +169,33 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
         </div>
       </motion.div>
 
+      {/* Search Bar */}
+      <motion.div
+        className="mb-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search allergens..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-9 bg-muted/50 border-border"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </motion.div>
+
       {/* Allergen Groups */}
       <motion.div
         className="space-y-3"
@@ -165,7 +203,7 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        {orderedGroups.map((group, index) => (
+        {filteredGroups.map((group, index) => (
           <motion.div
             key={group.family}
             initial={{ opacity: 0, x: -20 }}
