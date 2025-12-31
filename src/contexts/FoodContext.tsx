@@ -28,6 +28,9 @@ interface FoodContextType {
   deleteLog: (logId: string) => Promise<void>;
   updateProfile: (updates: ProfileUpdate) => Promise<void>;
   getTriedCount: () => number;
+  getSafeAllergenCount: () => number;
+  getTotalAllergenCount: () => number;
+  getTotalLogCount: () => number;
   getRecentLogs: (limit: number) => (FoodLog & { food: RefFood })[];
   getNextSuggestions: (limit: number) => RefFood[];
   getAllergenFoods: () => FoodWithState[];
@@ -261,6 +264,19 @@ export function FoodProvider({ children }: { children: ReactNode }) {
     return userFoodStates.filter(s => s.status === 'SAFE' || s.status === 'TRYING').length;
   }, [userFoodStates]);
 
+  const getSafeAllergenCount = useCallback(() => {
+    const allergenIds = new Set(foods.filter(f => f.is_allergen).map(f => f.id));
+    return userFoodStates.filter(s => allergenIds.has(s.food_id) && s.status === 'SAFE').length;
+  }, [foods, userFoodStates]);
+
+  const getTotalAllergenCount = useCallback(() => {
+    return foods.filter(f => f.is_allergen).length;
+  }, [foods]);
+
+  const getTotalLogCount = useCallback(() => {
+    return logs.length;
+  }, [logs]);
+
   const getRecentLogs = useCallback((limit: number) => {
     return logs
       .slice(0, limit)
@@ -377,6 +393,9 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       deleteLog,
       updateProfile,
       getTriedCount,
+      getSafeAllergenCount,
+      getTotalAllergenCount,
+      getTotalLogCount,
       getRecentLogs,
       getNextSuggestions,
       getAllergenFoods,

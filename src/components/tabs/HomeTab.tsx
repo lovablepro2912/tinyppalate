@@ -5,17 +5,18 @@ import { ProgressRing } from '@/components/ProgressRing';
 import { FoodCard } from '@/components/FoodCard';
 import { FoodDetailSheet } from '@/components/FoodDetailSheet';
 import { DailyBiteWidget } from '@/components/DailyBiteWidget';
-import { Sparkles, Clock, ShieldCheck, CalendarClock } from 'lucide-react';
+import { Sparkles, Clock, ShieldCheck, CalendarClock, UtensilsCrossed, ShieldPlus, BookOpen } from 'lucide-react';
 import { FoodWithState } from '@/types/food';
 import { formatDistanceToNow, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface HomeTabProps {
   onSelectFood: (food: FoodWithState) => void;
 }
 
 export function HomeTab({ onSelectFood }: HomeTabProps) {
-  const { profile, getTriedCount, getNextSuggestions, getRecentLogs, getFoodWithState, getAllergenMaintenanceNeeded } = useFoodContext();
+  const { profile, getTriedCount, getNextSuggestions, getRecentLogs, getFoodWithState, getAllergenMaintenanceNeeded, getSafeAllergenCount, getTotalAllergenCount, getTotalLogCount } = useFoodContext();
   
   const [selectedFoodForDetail, setSelectedFoodForDetail] = useState<FoodWithState | null>(null);
   
@@ -23,6 +24,9 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
   const suggestions = getNextSuggestions(4);
   const recentLogs = getRecentLogs(3);
   const maintenanceNeeded = getAllergenMaintenanceNeeded();
+  const safeAllergenCount = getSafeAllergenCount();
+  const totalAllergenCount = getTotalAllergenCount();
+  const totalLogs = getTotalLogCount();
 
   const handleFoodClick = (food: FoodWithState) => {
     setSelectedFoodForDetail(food);
@@ -63,6 +67,31 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
           <p className="mt-4 text-center text-muted-foreground font-medium">
             {100 - triedCount} more foods to discover!
           </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-3 gap-3 mt-6">
+          <Card className="bg-muted/50 border-0">
+            <CardContent className="p-3 text-center">
+              <UtensilsCrossed className="w-5 h-5 mx-auto mb-1 text-primary" />
+              <p className="text-xl font-bold text-foreground">{triedCount}</p>
+              <p className="text-xs text-muted-foreground">Foods Tried</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/50 border-0">
+            <CardContent className="p-3 text-center">
+              <ShieldPlus className="w-5 h-5 mx-auto mb-1 text-success" />
+              <p className="text-xl font-bold text-foreground">{safeAllergenCount}/{totalAllergenCount}</p>
+              <p className="text-xs text-muted-foreground">Allergens Safe</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/50 border-0">
+            <CardContent className="p-3 text-center">
+              <BookOpen className="w-5 h-5 mx-auto mb-1 text-info" />
+              <p className="text-xl font-bold text-foreground">{totalLogs}</p>
+              <p className="text-xs text-muted-foreground">Total Logs</p>
+            </CardContent>
+          </Card>
         </div>
       </motion.div>
 
