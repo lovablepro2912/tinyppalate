@@ -5,8 +5,9 @@ import { ProgressRing } from "@/components/ProgressRing";
 import { FoodCard } from "@/components/FoodCard";
 import { FoodDetailSheet } from "@/components/FoodDetailSheet";
 import { DailyBiteWidget } from "@/components/DailyBiteWidget";
+import { EditLogModal } from "@/components/EditLogModal";
 import { Sparkles, Clock, ShieldCheck, CalendarClock, UtensilsCrossed, ShieldPlus, BookOpen } from "lucide-react";
-import { FoodWithState } from "@/types/food";
+import { FoodWithState, FoodLog, RefFood } from "@/types/food";
 import { formatDistanceToNow, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +30,7 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
   } = useFoodContext();
 
   const [selectedFoodForDetail, setSelectedFoodForDetail] = useState<FoodWithState | null>(null);
+  const [selectedLog, setSelectedLog] = useState<(FoodLog & { food: RefFood }) | null>(null);
 
   const triedCount = getTriedCount();
   const suggestions = getNextSuggestions(4);
@@ -127,6 +129,9 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
 
       {/* Food Detail Sheet */}
       <FoodDetailSheet food={selectedFoodForDetail} onClose={handleCloseDetail} onLogFood={handleLogFromDetail} />
+      
+      {/* Edit Log Modal */}
+      <EditLogModal log={selectedLog} onClose={() => setSelectedLog(null)} />
 
       {/* Allergen Maintenance Section */}
       {maintenanceNeeded.length > 0 && (
@@ -207,7 +212,7 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
               return (
                 <motion.button
                   key={log.id}
-                  onClick={() => onSelectFood(foodState)}
+                  onClick={() => setSelectedLog(log)}
                   className={cn(
                     "w-full flex items-center gap-3 rounded-2xl p-3 card-shadow text-left",
                     hasReaction ? "bg-danger/10 border border-danger/20" : "bg-card",
