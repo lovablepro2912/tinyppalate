@@ -35,7 +35,7 @@ export default function Auth() {
         const { error } = await signIn(email, password);
         if (error) throw error;
         toast({
-          title: "Welcome back! 👋",
+          title: "Welcome back!",
           description: "Let's continue tracking.",
         });
         navigate("/");
@@ -107,7 +107,7 @@ export default function Auth() {
             </motion.div>
             <h1 className="text-3xl font-bold text-foreground">TinyPalate</h1>
             <p className="text-muted-foreground mt-2 text-lg">
-              {isSignUp ? "Start your baby's delicious journey 🍼" : "Welcome back, foodie! 🥄"}
+              {isSignUp ? "Start your baby's delicious journey" : "Welcome back, foodie! 🥄"}
             </p>
           </div>
 
