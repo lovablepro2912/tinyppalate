@@ -274,6 +274,8 @@ export function FoodProvider({ children }: { children: ReactNode }) {
     let newStatus: FoodStatus;
     let newExposureCount: number;
     let stateId: string;
+    const tempLogId = `temp-${Date.now()}`;
+    const tempStateId = existingState?.id || `temp-state-${Date.now()}`;
 
     if (hasReaction) {
       newStatus = 'REACTION';
@@ -289,6 +291,38 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       newStatus = 'SAFE';
       newExposureCount = 1;
     }
+
+    // OPTIMISTIC UPDATE: Update local state immediately
+    const optimisticState: UserFoodState = existingState 
+      ? { ...existingState, status: newStatus, exposure_count: newExposureCount, last_eaten: now }
+      : {
+          id: tempStateId,
+          user_id: user.id,
+          food_id: foodId,
+          status: newStatus,
+          exposure_count: newExposureCount,
+          last_eaten: now,
+          created_at: now,
+          updated_at: now,
+        };
+
+    const optimisticLog: FoodLog = {
+      id: tempLogId,
+      user_id: user.id,
+      user_food_state_id: tempStateId,
+      reaction_severity: severity,
+      notes,
+      photo_url: null,
+      created_at: now,
+    };
+
+    // Update states optimistically
+    if (existingState) {
+      setUserFoodStates(prev => prev.map(s => s.id === existingState.id ? optimisticState : s));
+    } else {
+      setUserFoodStates(prev => [...prev, optimisticState]);
+    }
+    setLogs(prev => [optimisticLog, ...prev]);
 
     try {
       if (existingState) {
@@ -317,17 +351,27 @@ export function FoodProvider({ children }: { children: ReactNode }) {
           .single();
         
         stateId = data!.id;
+        
+        // Update the temp state ID with real ID
+        setUserFoodStates(prev => prev.map(s => s.id === tempStateId ? { ...s, id: stateId } : s));
       }
 
       // Create log
-      await supabase
+      const { data: logData } = await supabase
         .from('food_logs')
         .insert({
           user_id: user.id,
           user_food_state_id: stateId,
           reaction_severity: severity,
           notes,
-        });
+        })
+        .select()
+        .single();
+
+      // Update the temp log with real data
+      if (logData) {
+        setLogs(prev => prev.map(l => l.id === tempLogId ? castFoodLog({ ...logData, user_food_state_id: stateId }) : l));
+      }
 
       // Check for milestones and send notification
       const newTriedCount = userFoodStates.filter(s => s.status === 'SAFE' || s.status === 'TRYING').length + (existingState ? 0 : 1);
@@ -429,15 +473,20 @@ export function FoodProvider({ children }: { children: ReactNode }) {
           }, 300);
         }
       }
-
-      // Refresh data
-      await refreshData();
     } catch (error) {
+      // Rollback optimistic updates on error
+      if (existingState) {
+        setUserFoodStates(prev => prev.map(s => s.id === existingState.id ? existingState : s));
+      } else {
+        setUserFoodStates(prev => prev.filter(s => s.id !== tempStateId));
+      }
+      setLogs(prev => prev.filter(l => l.id !== tempLogId));
+      
       if (import.meta.env.DEV) console.error('Error logging food:', error);
       toast.error('Failed to log food. Please try again.');
       throw error;
     }
-  }, [foods, userFoodStates, user, refreshData, profile]);
+  }, [foods, userFoodStates, user, profile]);
 
   const updateLog = useCallback(async (logId: string, updates: LogUpdate) => {
     try {
