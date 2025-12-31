@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { AllergenCard } from '@/components/AllergenCard';
 import { FoodWithState } from '@/types/food';
-import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Search, X, Info, Baby, Heart } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Search, X, Info, Baby, Heart, Phone } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -305,23 +305,21 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
                     </ul>
                   </div>
                   <div className="bg-danger/10 border border-danger/20 rounded-xl p-3">
-                    <p className="font-medium text-foreground mb-2">
-                      Severe Reactions (call{' '}
-                      <a 
-                        href={`tel:${emergencyInfo.emergencyNumber}`} 
-                        className="text-danger underline font-bold"
-                      >
-                        {emergencyInfo.emergencyNumber}
-                      </a>
-                      ):
-                    </p>
-                    <ul className="text-muted-foreground space-y-1 text-xs">
+                    <p className="font-medium text-foreground mb-2">🚨 Severe Reactions:</p>
+                    <ul className="text-muted-foreground space-y-1 text-xs mb-3">
                       <li>• Difficulty breathing or wheezing</li>
                       <li>• Widespread hives over the body</li>
                       <li>• Repeated vomiting</li>
                       <li>• Sudden lethargy or unresponsiveness</li>
                       <li>• Swelling of tongue or throat</li>
                     </ul>
+                    <a
+                      href={`tel:${emergencyInfo.emergencyNumber}`}
+                      className="flex items-center justify-center gap-2 bg-danger text-white font-bold py-2.5 px-4 rounded-lg hover:bg-danger/90 transition-colors w-full"
+                    >
+                      <Phone className="w-4 h-4" />
+                      Call {emergencyInfo.emergencyNumber} Immediately
+                    </a>
                   </div>
                 </div>
               </section>
