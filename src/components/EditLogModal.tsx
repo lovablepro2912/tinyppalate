@@ -135,7 +135,12 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
   return (
     <>
       <Sheet open={!!log} onOpenChange={() => onClose()}>
-        <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl overflow-hidden touch-none" onPointerDownOutside={(e) => e.preventDefault()}>
+        <SheetContent 
+          side="bottom" 
+          className="h-[90vh] rounded-t-3xl overflow-hidden" 
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <SheetHeader className="pb-4">
             <SheetTitle className="flex items-center gap-3">
               <span className="text-3xl">{log.food.emoji}</span>
@@ -143,7 +148,14 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
             </SheetTitle>
           </SheetHeader>
 
-          <div className="space-y-5 overflow-y-auto pb-6 h-[calc(100%-60px)] touch-pan-y overscroll-contain">
+          <div 
+            className="space-y-5 overflow-y-auto pb-6 h-[calc(100%-60px)]"
+            style={{ 
+              touchAction: 'pan-y', 
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
             {/* Date Picker */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Date</label>
