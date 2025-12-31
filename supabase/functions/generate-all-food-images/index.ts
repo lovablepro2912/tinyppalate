@@ -15,22 +15,22 @@ serve(async (req) => {
   }
 
   try {
-    const { batchSize = 10, startFromIndex = 0, autoContinue = true } = await req.json().catch(() => ({}));
+    const { batchSize = 10, startFromId = 0, autoContinue = true } = await req.json().catch(() => ({}));
 
-    console.log(`Starting batch generation. Batch size: ${batchSize}, Starting from index: ${startFromIndex}, Auto-continue: ${autoContinue}`);
+    console.log(`Starting batch generation. Batch size: ${batchSize}, Starting from ID: ${startFromId}, Auto-continue: ${autoContinue}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get active foods without images (using foods table with UUID ids)
+    // Get foods without images
     const { data: foods, error: fetchError } = await supabase
-      .from("foods")
-      .select("id, food_name")
-      .eq("active", true)
+      .from("ref_foods")
+      .select("id, name")
       .is("image_url", null)
-      .order("food_name", { ascending: true })
-      .range(startFromIndex, startFromIndex + batchSize - 1);
+      .gt("id", startFromId)
+      .order("id", { ascending: true })
+      .limit(batchSize);
 
     if (fetchError) {
       throw new Error(`Failed to fetch foods: ${fetchError.message}`);
@@ -52,18 +52,17 @@ serve(async (req) => {
 
     // Count total remaining before processing
     const { count: totalRemaining } = await supabase
-      .from("foods")
+      .from("ref_foods")
       .select("id", { count: "exact", head: true })
-      .eq("active", true)
       .is("image_url", null);
 
     console.log(`📊 Progress: ${totalRemaining} foods remaining. Processing batch of ${foods.length}...`);
 
-    const results: Array<{ foodId: string; foodName: string; success: boolean; error?: string }> = [];
+    const results: Array<{ foodId: number; foodName: string; success: boolean; error?: string }> = [];
     
     // Process each food with delay to avoid rate limits
     for (const food of foods) {
-      console.log(`🍽️ Processing: ${food.food_name} (ID: ${food.id})`);
+      console.log(`🍽️ Processing: ${food.name} (ID: ${food.id})`);
       
       try {
         // Call the single image generation function
@@ -75,7 +74,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             foodId: food.id,
-            foodName: food.food_name,
+            foodName: food.name,
           }),
         });
 
@@ -87,7 +86,7 @@ serve(async (req) => {
             console.log("⚠️ Rate limited, will continue after delay");
             results.push({ 
               foodId: food.id, 
-              foodName: food.food_name, 
+              foodName: food.name, 
               success: false, 
               error: "Rate limited" 
             });
@@ -102,15 +101,15 @@ serve(async (req) => {
         const result = await response.json();
         results.push({ 
           foodId: food.id, 
-          foodName: food.food_name, 
+          foodName: food.name, 
           success: true 
         });
-        console.log(`✅ Completed: ${food.food_name}`);
+        console.log(`✅ Completed: ${food.name}`);
       } catch (error) {
-        console.error(`❌ Failed: ${food.food_name}`, error);
+        console.error(`❌ Failed: ${food.name}`, error);
         results.push({ 
           foodId: food.id, 
-          foodName: food.food_name, 
+          foodName: food.name, 
           success: false, 
           error: error instanceof Error ? error.message : "Unknown error" 
         });
@@ -125,19 +124,18 @@ serve(async (req) => {
 
     // Count remaining foods after this batch
     const { count: remaining } = await supabase
-      .from("foods")
+      .from("ref_foods")
       .select("id", { count: "exact", head: true })
-      .eq("active", true)
       .is("image_url", null);
 
     const successCount = results.filter(r => r.success).length;
-    const nextIndex = startFromIndex + results.length;
+    const lastProcessedId = results.length > 0 ? results[results.length - 1].foodId : startFromId;
 
     console.log(`📊 Batch complete. Success: ${successCount}/${results.length}. Remaining: ${remaining}`);
 
     // Auto-continue if there are more foods to process
     if (autoContinue && remaining && remaining > 0) {
-      console.log(`🔄 Auto-continuing with next batch starting from index: ${nextIndex}`);
+      console.log(`🔄 Auto-continuing with next batch starting from ID: ${lastProcessedId}`);
       
       // Trigger next batch asynchronously (don't wait for response)
       fetch(`${supabaseUrl}/functions/v1/generate-all-food-images`, {
@@ -148,7 +146,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           batchSize,
-          startFromIndex: nextIndex,
+          startFromId: lastProcessedId,
           autoContinue: true,
         }),
       }).catch(err => console.error("Failed to trigger next batch:", err));
@@ -161,7 +159,7 @@ serve(async (req) => {
         successful: successCount,
         failed: results.length - successCount,
         remaining: remaining || 0,
-        nextIndex,
+        lastProcessedId,
         results,
         autoContinuing: autoContinue && remaining && remaining > 0,
       }),
