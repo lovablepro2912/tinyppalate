@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
-import { Check, AlertTriangle, Siren, Search, X, FileText } from 'lucide-react';
+import { Check, AlertTriangle, Siren, Search, X, FileText, ShieldAlert } from 'lucide-react';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { FoodLog, RefFood } from '@/types/food';
 import { EditLogModal } from '@/components/EditLogModal';
@@ -174,7 +174,15 @@ export function JournalTab() {
 
                       {/* Food Name & Time */}
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-foreground">{log.food.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-foreground">{log.food.name}</p>
+                          {log.food.is_allergen && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                              <ShieldAlert className="w-2.5 h-2.5" />
+                              Allergen
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{formatTime(log.created_at)}</p>
                       </div>
 
