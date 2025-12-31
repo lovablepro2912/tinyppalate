@@ -373,6 +373,11 @@ export function FoodProvider({ children }: { children: ReactNode }) {
         setLogs(prev => prev.map(l => l.id === tempLogId ? castFoodLog({ ...logData, user_food_state_id: stateId }) : l));
       }
 
+      // Success toast for logging
+      toast.success(`${food.name} logged`, {
+        duration: 2000,
+      });
+
       // Check for milestones and send notification
       const newTriedCount = userFoodStates.filter(s => s.status === 'SAFE' || s.status === 'TRYING').length + (existingState ? 0 : 1);
       const milestones = [10, 25, 50, 75, 100];
@@ -513,6 +518,8 @@ export function FoodProvider({ children }: { children: ReactNode }) {
           ...(updates.created_at !== undefined && { created_at: updates.created_at }),
         })
         .eq('id', logId);
+      
+      toast.success('Entry updated', { duration: 2000 });
     } catch (error) {
       // Rollback on error
       setLogs(prev => prev.map(l => l.id === logId ? originalLog : l));
@@ -536,6 +543,8 @@ export function FoodProvider({ children }: { children: ReactNode }) {
         .from('food_logs')
         .delete()
         .eq('id', logId);
+      
+      toast.success('Entry deleted', { duration: 2000 });
     } catch (error) {
       // Rollback on error - insert back at original position
       setLogs(prev => {
