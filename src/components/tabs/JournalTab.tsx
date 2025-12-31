@@ -18,6 +18,24 @@ interface GroupedLogs {
   [date: string]: LogWithFood[];
 }
 
+function FoodLogImage({ food }: { food: RefFood }) {
+  const [imageError, setImageError] = useState(false);
+  const hasImage = food.image_url && !imageError;
+
+  if (hasImage) {
+    return (
+      <img 
+        src={food.image_url} 
+        alt={food.name}
+        className="w-8 h-8 object-contain"
+        onError={() => setImageError(true)}
+      />
+    );
+  }
+
+  return <span className="text-2xl">{food.emoji}</span>;
+}
+
 function formatDateHeader(dateStr: string): string {
   const date = parseISO(dateStr);
   if (isToday(date)) return 'Today';
@@ -168,8 +186,8 @@ export function JournalTab() {
                       )}
                     >
                       {/* Food Icon */}
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">
-                        {log.food.emoji}
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <FoodLogImage food={log.food} />
                       </div>
 
                       {/* Food Name & Time */}

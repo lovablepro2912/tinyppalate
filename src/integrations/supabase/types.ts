@@ -219,6 +219,7 @@ export type Database = {
           created_at: string
           emoji: string
           id: number
+          image_url: string | null
           is_allergen: boolean
           name: string
           serving_guide: Json | null
@@ -230,6 +231,7 @@ export type Database = {
           created_at?: string
           emoji?: string
           id?: number
+          image_url?: string | null
           is_allergen?: boolean
           name: string
           serving_guide?: Json | null
@@ -241,6 +243,7 @@ export type Database = {
           created_at?: string
           emoji?: string
           id?: number
+          image_url?: string | null
           is_allergen?: boolean
           name?: string
           serving_guide?: Json | null
