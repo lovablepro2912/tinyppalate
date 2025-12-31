@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      device_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       food_logs: {
         Row: {
           created_at: string
@@ -72,6 +107,85 @@ export type Database = {
           text?: string
         }
         Relationships: []
+      }
+      notification_log: {
+        Row: {
+          id: string
+          notification_type: string
+          reference_id: string | null
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notification_type: string
+          reference_id?: string | null
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notification_type?: string
+          reference_id?: string | null
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          allergen_maintenance: boolean
+          allergen_progress: boolean
+          created_at: string
+          daily_reminder: boolean
+          daily_reminder_time: string
+          id: string
+          milestones: boolean
+          reaction_followup: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allergen_maintenance?: boolean
+          allergen_progress?: boolean
+          created_at?: string
+          daily_reminder?: boolean
+          daily_reminder_time?: string
+          id?: string
+          milestones?: boolean
+          reaction_followup?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allergen_maintenance?: boolean
+          allergen_progress?: boolean
+          created_at?: string
+          daily_reminder?: boolean
+          daily_reminder_time?: string
+          id?: string
+          milestones?: boolean
+          reaction_followup?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
