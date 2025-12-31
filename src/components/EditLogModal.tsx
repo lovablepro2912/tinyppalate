@@ -137,9 +137,14 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
       <Sheet open={!!log} onOpenChange={() => onClose()}>
         <SheetContent 
           side="bottom" 
-          className="h-[90vh] rounded-t-3xl overflow-hidden" 
+          className="h-[90vh] rounded-t-3xl overflow-hidden select-none" 
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
+          style={{
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+          }}
         >
           <SheetHeader className="pb-4">
             <SheetTitle className="flex items-center gap-3">
@@ -151,9 +156,9 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
           <div 
             className="space-y-5 overflow-y-auto pb-6 h-[calc(100%-60px)]"
             style={{ 
-              touchAction: 'pan-y', 
+              touchAction: 'pan-y',
               overscrollBehavior: 'contain',
-              WebkitOverflowScrolling: 'touch'
+              WebkitOverflowScrolling: 'touch',
             }}
           >
             {/* Date Picker */}
