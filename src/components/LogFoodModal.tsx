@@ -22,7 +22,7 @@ const allSymptoms = [...mildSymptoms, ...severeSymptoms];
 
 export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFoodModalProps) {
   const { logFood, profile } = useFoodContext();
-  const { success, error: hapticError } = useHaptics();
+  const { success, error: hapticError, selection, medium } = useHaptics();
   const [step, setStep] = useState<'safety' | 'log'>(showSafetyWarning ? 'safety' : 'log');
   const [hasReaction, setHasReaction] = useState(false);
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
@@ -143,7 +143,10 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
                   </div>
                   <Switch
                     checked={hasReaction}
-                    onCheckedChange={setHasReaction}
+                    onCheckedChange={(checked) => {
+                      medium();
+                      setHasReaction(checked);
+                    }}
                   />
                 </div>
 
@@ -190,13 +193,14 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
                                 type="button"
                                 size="sm"
                                 variant={isSelected ? 'default' : 'outline'}
-                                onClick={() => {
-                                  setSelectedSymptoms(prev => 
-                                    prev.includes(symptom) 
-                                      ? prev.filter(s => s !== symptom)
-                                      : [...prev, symptom]
-                                  );
-                                }}
+                              onClick={() => {
+                                selection();
+                                setSelectedSymptoms(prev => 
+                                  prev.includes(symptom) 
+                                    ? prev.filter(s => s !== symptom)
+                                    : [...prev, symptom]
+                                );
+                              }}
                                 className={cn(
                                   "rounded-full transition-all",
                                   isSelected && isSevereSymptom && "bg-danger hover:bg-danger/90",

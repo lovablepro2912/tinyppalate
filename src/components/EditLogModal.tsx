@@ -9,6 +9,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { useFoodContext } from '@/contexts/FoodContext';
+import { useHaptics } from '@/hooks/useHaptics';
 import { FoodLog, RefFood } from '@/types/food';
 import { cn } from '@/lib/utils';
 import {
@@ -58,6 +59,7 @@ function parseCleanNotes(notes: string): string {
 
 export function EditLogModal({ log, onClose }: EditLogModalProps) {
   const { updateLog, deleteLog } = useFoodContext();
+  const { selection, medium, success } = useHaptics();
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState('');
   const [reactionSeverity, setReactionSeverity] = useState<0 | 1 | 2>(0);
@@ -137,6 +139,7 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
       created_at: newDate.toISOString(),
     });
     
+    success();
     onClose();
   };
 
@@ -148,6 +151,7 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
   };
 
   const handleSeverityChange = (value: 0 | 1 | 2) => {
+    medium();
     setReactionSeverity(value);
     // Clear symptoms if switching to no reaction
     if (value === 0) {
@@ -313,6 +317,7 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
                             size="sm"
                             variant={isSelected ? 'default' : 'outline'}
                             onClick={() => {
+                              selection();
                               setSelectedSymptoms(prev => 
                                 prev.includes(symptom) 
                                   ? prev.filter(s => s !== symptom)
