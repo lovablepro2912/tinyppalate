@@ -28,6 +28,26 @@ const AGE_TABS = [
   { key: "12mo+", label: "12-24 mos" },
 ] as const;
 
+function FoodImage({ food }: { food: FoodWithState }) {
+  const [imageError, setImageError] = useState(false);
+  const hasImage = food.image_url && !imageError;
+
+  if (hasImage) {
+    return (
+      <div className="w-20 h-20 rounded-2xl bg-secondary/50 flex items-center justify-center overflow-hidden">
+        <img 
+          src={food.image_url} 
+          alt={food.name}
+          className="w-16 h-16 object-contain"
+          onError={() => setImageError(true)}
+        />
+      </div>
+    );
+  }
+
+  return <span className="text-6xl">{food.emoji}</span>;
+}
+
 export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("6-9mo");
@@ -111,7 +131,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
 
               {/* Food Header */}
               <div className="flex items-center gap-4">
-                <span className="text-6xl">{food.emoji}</span>
+                <FoodImage food={food} />
                 <div className="flex-1">
                   <h2 className="text-xl font-bold text-foreground">{food.name}</h2>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">

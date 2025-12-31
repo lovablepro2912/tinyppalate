@@ -13,6 +13,39 @@ interface FoodPickerModalProps {
   onSelectFood: (food: FoodWithState) => void;
 }
 
+function FoodPickerItem({ food, onClick }: { food: FoodWithState; onClick: () => void }) {
+  const [imageError, setImageError] = useState(false);
+  const isUnlocked = food.state && (food.state.status === 'SAFE' || food.state.status === 'TRYING');
+  const hasImage = food.image_url && !imageError;
+
+  return (
+    <motion.button
+      onClick={onClick}
+      className="flex flex-col items-center gap-1 p-2"
+      whileTap={{ scale: 0.95 }}
+    >
+      <div className={cn(
+        "w-14 h-14 rounded-xl bg-secondary flex items-center justify-center overflow-hidden",
+        !isUnlocked && food.state?.status !== 'REACTION' && "grayscale-food"
+      )}>
+        {hasImage ? (
+          <img 
+            src={food.image_url} 
+            alt={food.name}
+            className="w-10 h-10 object-contain"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <span className="text-2xl">{food.emoji}</span>
+        )}
+      </div>
+      <span className="text-xs font-medium text-foreground text-center line-clamp-1">
+        {food.name}
+      </span>
+    </motion.button>
+  );
+}
+
 export function FoodPickerModal({ isOpen, onClose, onSelectFood }: FoodPickerModalProps) {
   const { getFoodsWithStates, foods } = useFoodContext();
   const [search, setSearch] = useState('');
@@ -99,27 +132,13 @@ export function FoodPickerModal({ isOpen, onClose, onSelectFood }: FoodPickerMod
           {/* Food Grid */}
           <div className="p-4 overflow-y-auto max-h-[60vh]">
             <div className="grid grid-cols-4 gap-3">
-              {filteredFoods.map(food => {
-                const isUnlocked = food.state && (food.state.status === 'SAFE' || food.state.status === 'TRYING');
-                return (
-                  <motion.button
-                    key={food.id}
-                    onClick={() => onSelectFood(food)}
-                    className="flex flex-col items-center gap-1 p-2"
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <div className={cn(
-                      "w-14 h-14 rounded-xl bg-secondary flex items-center justify-center text-2xl",
-                      !isUnlocked && food.state?.status !== 'REACTION' && "grayscale-food"
-                    )}>
-                      {food.emoji}
-                    </div>
-                    <span className="text-xs font-medium text-foreground text-center line-clamp-1">
-                      {food.name}
-                    </span>
-                  </motion.button>
-                );
-              })}
+              {filteredFoods.map(food => (
+                <FoodPickerItem 
+                  key={food.id} 
+                  food={food} 
+                  onClick={() => onSelectFood(food)} 
+                />
+              ))}
             </div>
           </div>
         </motion.div>

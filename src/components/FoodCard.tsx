@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FoodWithState } from '@/types/food';
 import { CheckCircle, AlertTriangle, Clock } from 'lucide-react';
@@ -8,10 +9,11 @@ interface FoodCardProps {
   onClick?: () => void;
   size?: 'sm' | 'md' | 'lg';
   showStatus?: boolean;
-  forceColor?: boolean; // New prop to force full color (for Try Next section)
+  forceColor?: boolean;
 }
 
 export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceColor = false }: FoodCardProps) {
+  const [imageError, setImageError] = useState(false);
   const isUnlocked = food.state && (food.state.status === 'SAFE' || food.state.status === 'TRYING');
   const hasReaction = food.state?.status === 'REACTION';
 
@@ -27,8 +29,17 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
     lg: 'text-4xl',
   };
 
+  const imageSizes = {
+    sm: 'w-12 h-12',
+    md: 'w-16 h-16',
+    lg: 'w-20 h-20',
+  };
+
   // Only apply grayscale if not unlocked, not a reaction, and not forced to color
   const shouldBeGrayscale = !forceColor && !isUnlocked && !hasReaction;
+
+  // Use image if available and not errored
+  const hasImage = food.image_url && !imageError;
 
   return (
     <motion.button
@@ -44,10 +55,19 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
     >
       <div className={cn(
         sizeClasses[size],
-        "flex items-center justify-center rounded-xl bg-secondary/50",
+        "flex items-center justify-center rounded-xl bg-secondary/50 overflow-hidden",
         shouldBeGrayscale && "grayscale-food"
       )}>
-        <span className={emojiSizes[size]}>{food.emoji}</span>
+        {hasImage ? (
+          <img 
+            src={food.image_url} 
+            alt={food.name}
+            className={cn(imageSizes[size], "object-contain")}
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <span className={emojiSizes[size]}>{food.emoji}</span>
+        )}
       </div>
       
       <span className="text-xs font-medium text-foreground text-center line-clamp-1 max-w-full px-1">
