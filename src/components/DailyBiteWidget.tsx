@@ -1,10 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Lightbulb, Salad, GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { Button } from '@/components/ui/button';
 import { FoodWithState } from '@/types/food';
+
+const DAILY_BITE_CACHE_KEY = 'daily-bite-cache';
+
+interface DailyBiteCache {
+  date: string;
+  tipText: string;
+  tipType: 'general' | 'nutrition' | 'skill';
+  actionFoodId: number | null;
+  actionLabel: string | null;
+}
 
 interface TipRule {
   id: string;
@@ -31,14 +41,71 @@ export function DailyBiteWidget({ onSelectFood }: DailyBiteWidgetProps) {
   const [actionFood, setActionFood] = useState<FoodWithState | null>(null);
   const [actionLabel, setActionLabel] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
+    // Only load once per mount, and only when foods are available
+    if (hasLoaded.current || foods.length === 0) return;
+    hasLoaded.current = true;
     loadSmartTip();
   }, [foods]);
+
+  const getTodayDateString = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  const loadFromCache = (): DailyBiteCache | null => {
+    try {
+      const cached = localStorage.getItem(DAILY_BITE_CACHE_KEY);
+      if (!cached) return null;
+      
+      const cacheData = JSON.parse(cached) as DailyBiteCache;
+      const today = getTodayDateString();
+      
+      // Only use cache if it's from today
+      if (cacheData.date === today && cacheData.tipText) {
+        return cacheData;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const saveToCache = (data: Omit<DailyBiteCache, 'date'>) => {
+    try {
+      const cacheData: DailyBiteCache = {
+        ...data,
+        date: getTodayDateString()
+      };
+      localStorage.setItem(DAILY_BITE_CACHE_KEY, JSON.stringify(cacheData));
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
+  };
 
   const loadSmartTip = async () => {
     try {
       setLoading(true);
+      
+      // Check cache first
+      const cached = loadFromCache();
+      if (cached) {
+        setTipText(cached.tipText);
+        setTipType(cached.tipType);
+        setActionLabel(cached.actionLabel);
+        
+        if (cached.actionFoodId) {
+          const food = getFoodWithState(cached.actionFoodId);
+          if (food) {
+            setActionFood(food);
+          }
+        }
+        setLoading(false);
+        return;
+      }
+      
+      // No valid cache, fetch new tip
       const recentLogs = getRecentLogs(1);
       
       if (recentLogs.length > 0) {
@@ -52,8 +119,10 @@ export function DailyBiteWidget({ onSelectFood }: DailyBiteWidgetProps) {
         
         if (tipRules && tipRules.length > 0) {
           const rule = tipRules[0] as TipRule;
+          const newTipType = rule.action_food_id ? 'nutrition' : 'skill';
+          
           setTipText(rule.tip_text);
-          setTipType(rule.action_food_id ? 'nutrition' : 'skill');
+          setTipType(newTipType);
           setActionLabel(rule.action_label);
           
           if (rule.action_food_id) {
@@ -62,6 +131,15 @@ export function DailyBiteWidget({ onSelectFood }: DailyBiteWidgetProps) {
               setActionFood(food);
             }
           }
+          
+          // Save to cache
+          saveToCache({
+            tipText: rule.tip_text,
+            tipType: newTipType,
+            actionFoodId: rule.action_food_id,
+            actionLabel: rule.action_label
+          });
+          
           setLoading(false);
           return;
         }
@@ -78,6 +156,14 @@ export function DailyBiteWidget({ onSelectFood }: DailyBiteWidgetProps) {
         setTipType('general');
         setActionFood(null);
         setActionLabel(null);
+        
+        // Save to cache
+        saveToCache({
+          tipText: randomTip.text,
+          tipType: 'general',
+          actionFoodId: null,
+          actionLabel: null
+        });
       }
     } catch (error) {
       console.error('Error loading smart tip:', error);
