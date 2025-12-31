@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { RefFood, UserFoodState, FoodLog, Profile, FoodStatus, FoodWithState } from '@/types/food';
 import { toast } from 'sonner';
+import confetti from 'canvas-confetti';
 
 interface LogUpdate {
   reaction_severity?: 0 | 1 | 2;
@@ -55,6 +56,105 @@ function castFoodLog(data: any): FoodLog {
   };
 }
 
+// Celebration functions
+const triggerFoodSafeCelebration = () => {
+  confetti({
+    particleCount: 50,
+    spread: 60,
+    origin: { y: 0.7 },
+    colors: ['#22c55e', '#86efac', '#4ade80'],
+  });
+};
+
+const triggerGroupCompleteCelebration = () => {
+  const duration = 2000;
+  const end = Date.now() + duration;
+
+  const frame = () => {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 },
+      colors: ['#22c55e', '#f59e0b', '#3b82f6'],
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 },
+      colors: ['#22c55e', '#f59e0b', '#3b82f6'],
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  };
+  frame();
+};
+
+const triggerAllCompleteCelebration = () => {
+  const epicDuration = 4000;
+  const epicEnd = Date.now() + epicDuration;
+  
+  confetti({
+    particleCount: 150,
+    spread: 180,
+    origin: { y: 0.5 },
+    colors: ['#22c55e', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'],
+  });
+
+  const epicFrame = () => {
+    confetti({
+      particleCount: 5,
+      angle: 60,
+      spread: 80,
+      origin: { x: 0, y: 0.5 },
+      colors: ['#22c55e', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'],
+    });
+    confetti({
+      particleCount: 5,
+      angle: 120,
+      spread: 80,
+      origin: { x: 1, y: 0.5 },
+      colors: ['#22c55e', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'],
+    });
+
+    if (Date.now() < epicEnd) {
+      requestAnimationFrame(epicFrame);
+    }
+  };
+  epicFrame();
+
+  setTimeout(() => {
+    confetti({
+      particleCount: 100,
+      startVelocity: 30,
+      spread: 360,
+      origin: { x: 0.5, y: 0.3 },
+      colors: ['#22c55e', '#f59e0b', '#3b82f6'],
+    });
+  }, 500);
+  setTimeout(() => {
+    confetti({
+      particleCount: 100,
+      startVelocity: 30,
+      spread: 360,
+      origin: { x: 0.3, y: 0.4 },
+      colors: ['#ec4899', '#8b5cf6', '#22c55e'],
+    });
+  }, 1000);
+};
+
+const triggerMilestoneCelebration = () => {
+  confetti({
+    particleCount: 100,
+    spread: 100,
+    origin: { y: 0.6 },
+    colors: ['#f59e0b', '#fbbf24', '#fcd34d'],
+  });
+};
+
 export function FoodProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -62,6 +162,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
   const [userFoodStates, setUserFoodStates] = useState<UserFoodState[]>([]);
   const [logs, setLogs] = useState<FoodLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const previousSafeAllergenFamiliesRef = useRef<Set<string>>(new Set());
 
   // Fetch all data
   const fetchData = useCallback(async () => {
@@ -88,7 +189,8 @@ export function FoodProvider({ children }: { children: ReactNode }) {
         .order('category', { ascending: true })
         .order('name', { ascending: true });
       
-      setFoods((foodsData || []) as RefFood[]);
+      const allFoods = (foodsData || []) as RefFood[];
+      setFoods(allFoods);
 
       // Fetch user food states
       const { data: statesData } = await supabase
@@ -96,7 +198,34 @@ export function FoodProvider({ children }: { children: ReactNode }) {
         .select('*')
         .eq('user_id', user.id);
       
-      setUserFoodStates((statesData || []).map(castUserFoodState));
+      const allStates = (statesData || []).map(castUserFoodState);
+      setUserFoodStates(allStates);
+      
+      // Initialize the safe allergen families ref
+      const allergenFoods = allFoods.filter(f => f.is_allergen);
+      const familyStatus = new Map<string, { total: number; safe: number }>();
+      
+      allergenFoods.forEach(af => {
+        const family = af.allergen_family || 'Other';
+        if (!familyStatus.has(family)) {
+          familyStatus.set(family, { total: 0, safe: 0 });
+        }
+        const data = familyStatus.get(family)!;
+        data.total++;
+        
+        const state = allStates.find(s => s.food_id === af.id);
+        if (state?.status === 'SAFE') {
+          data.safe++;
+        }
+      });
+      
+      const completeFamilies = new Set<string>();
+      familyStatus.forEach((data, family) => {
+        if (data.safe === data.total && data.total > 0) {
+          completeFamilies.add(family);
+        }
+      });
+      previousSafeAllergenFamiliesRef.current = completeFamilies;
 
       // Fetch logs
       const { data: logsData } = await supabase
@@ -204,6 +333,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       const newTriedCount = userFoodStates.filter(s => s.status === 'SAFE' || s.status === 'TRYING').length + (existingState ? 0 : 1);
       const milestones = [10, 25, 50, 75, 100];
       if (milestones.includes(newTriedCount)) {
+        triggerMilestoneCelebration();
         try {
           await supabase.functions.invoke('send-notification', {
             body: {
@@ -219,6 +349,87 @@ export function FoodProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Celebration logic for allergens
+      if (newStatus === 'SAFE' && food.is_allergen) {
+        // Get allergen families and their completion status BEFORE this log
+        const allergenFoods = foods.filter(f => f.is_allergen);
+        const allergenFamilies = new Map<string, { total: number; safe: number }>();
+        
+        allergenFoods.forEach(af => {
+          const family = af.allergen_family || 'Other';
+          if (!allergenFamilies.has(family)) {
+            allergenFamilies.set(family, { total: 0, safe: 0 });
+          }
+          const familyData = allergenFamilies.get(family)!;
+          familyData.total++;
+          
+          const state = userFoodStates.find(s => s.food_id === af.id);
+          if (state?.status === 'SAFE') {
+            familyData.safe++;
+          }
+        });
+        
+        // Count safe before this action
+        const currentFamily = food.allergen_family || 'Other';
+        const familyData = allergenFamilies.get(currentFamily);
+        const wasAlreadySafe = existingState?.status === 'SAFE';
+        
+        // If this food wasn't already safe, increment the safe count
+        if (familyData && !wasAlreadySafe) {
+          familyData.safe++;
+        }
+        
+        // Check if this completes the family
+        const familyNowComplete = familyData && familyData.safe === familyData.total;
+        const familyWasComplete = previousSafeAllergenFamiliesRef.current.has(currentFamily);
+        
+        // Check if ALL allergens are now complete
+        let allFamiliesComplete = true;
+        allergenFamilies.forEach((data) => {
+          if (data.safe < data.total) {
+            allFamiliesComplete = false;
+          }
+        });
+        
+        if (allFamiliesComplete && !wasAlreadySafe) {
+          // All allergens complete - EPIC celebration!
+          setTimeout(() => {
+            triggerAllCompleteCelebration();
+            toast.success("🎉 AMAZING! All allergens completed!", {
+              description: `${profile?.baby_name || 'Your baby'} has successfully cleared all Top 9 allergens!`,
+              duration: 6000,
+            });
+          }, 300);
+        } else if (familyNowComplete && !familyWasComplete && !wasAlreadySafe) {
+          // Family just completed - medium celebration
+          setTimeout(() => {
+            triggerGroupCompleteCelebration();
+            toast.success(`🎊 ${currentFamily} group complete!`, {
+              description: `All ${currentFamily.toLowerCase()} allergens have been cleared!`,
+              duration: 4000,
+            });
+          }, 300);
+        } else if (!wasAlreadySafe) {
+          // Individual food marked safe - small celebration
+          setTimeout(() => {
+            triggerFoodSafeCelebration();
+          }, 300);
+        }
+        
+        // Update the ref for next time
+        if (familyNowComplete) {
+          previousSafeAllergenFamiliesRef.current.add(currentFamily);
+        }
+      } else if (newStatus === 'SAFE' && !food.is_allergen) {
+        // Non-allergen food marked safe - small celebration
+        const wasAlreadySafe = existingState?.status === 'SAFE';
+        if (!wasAlreadySafe) {
+          setTimeout(() => {
+            triggerFoodSafeCelebration();
+          }, 300);
+        }
+      }
+
       // Refresh data
       await refreshData();
     } catch (error) {
@@ -226,7 +437,7 @@ export function FoodProvider({ children }: { children: ReactNode }) {
       toast.error('Failed to log food. Please try again.');
       throw error;
     }
-  }, [foods, userFoodStates, user, refreshData]);
+  }, [foods, userFoodStates, user, refreshData, profile]);
 
   const updateLog = useCallback(async (logId: string, updates: LogUpdate) => {
     try {
