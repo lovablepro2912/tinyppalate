@@ -417,13 +417,14 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
                     <span className="text-2xl">{allergenFamilies[group.family]?.emoji || '🍽️'}</span>
                     <div className="text-left">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-foreground">{group.family}</h3>
-                        {getGroupStatusIcon(group.status)}
+                        <h3 className="font-bold text-foreground">
+                          {group.family} <span className="font-normal text-muted-foreground">{group.safeCount}/{group.totalCount}</span>
+                        </h3>
+                        {group.status === 'safe' && <CheckCircle className="w-4 h-4 text-success" />}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {group.safeCount}/{group.totalCount} cleared
                         {allergenFamilies[group.family]?.note && (
-                          <span className="ml-1 text-primary/70">• {allergenFamilies[group.family].note}</span>
+                          <span className="text-primary/70">{allergenFamilies[group.family].note}</span>
                         )}
                       </p>
                     </div>
