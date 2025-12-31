@@ -1,1 +1,10 @@
 project_id = "zddkczbsykwuppyviqro"
+
+[functions.register-device]
+verify_jwt = true
+
+[functions.send-notification]
+verify_jwt = false
+
+[functions.notification-scheduler]
+verify_jwt = false

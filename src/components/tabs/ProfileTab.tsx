@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { OnboardingGuideSheet } from '@/components/onboarding/OnboardingGuideSheet';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
+import { NotificationSettings } from '@/components/NotificationSettings';
 import { useHaptics } from '@/hooks/useHaptics';
 import { APP_CONFIG } from '@/config/app';
 
@@ -153,6 +154,16 @@ export function ProfileTab() {
           <BookOpen className="w-4 h-4" />
           View App Guide
         </Button>
+      </motion.div>
+
+      {/* Notification Settings */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="mb-6"
+      >
+        <NotificationSettings />
       </motion.div>
 
       {/* Account Settings */}
