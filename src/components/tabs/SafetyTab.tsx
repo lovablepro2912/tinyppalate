@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils';
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { PoisonControlBanner } from '@/components/PoisonControlBanner';
+import { useUserLocation } from '@/hooks/useUserLocation';
+import { getPoisonControlInfo } from '@/data/poisonControlNumbers';
 
 interface SafetyTabProps {
   onSelectFood: (food: FoodWithState, showSafety: boolean) => void;
@@ -30,6 +32,8 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
   const { getAllergenFoods } = useFoodContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [showInfoSheet, setShowInfoSheet] = useState(false);
+  const { countryCode } = useUserLocation();
+  const emergencyInfo = getPoisonControlInfo(countryCode || 'US');
   
   const allergens = getAllergenFoods();
   const safeCount = allergens.filter(f => f.state?.status === 'SAFE').length;
@@ -301,7 +305,16 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
                     </ul>
                   </div>
                   <div className="bg-danger/10 border border-danger/20 rounded-xl p-3">
-                    <p className="font-medium text-foreground mb-2">Severe Reactions (call 911):</p>
+                    <p className="font-medium text-foreground mb-2">
+                      Severe Reactions (call{' '}
+                      <a 
+                        href={`tel:${emergencyInfo.emergencyNumber}`} 
+                        className="text-danger underline font-bold"
+                      >
+                        {emergencyInfo.emergencyNumber}
+                      </a>
+                      ):
+                    </p>
                     <ul className="text-muted-foreground space-y-1 text-xs">
                       <li>• Difficulty breathing or wheezing</li>
                       <li>• Widespread hives over the body</li>
