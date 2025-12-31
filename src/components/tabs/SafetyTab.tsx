@@ -50,8 +50,19 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
     return 'to_try';
   };
 
-  // Family order for display
-  const familyOrder = ['Peanut', 'Egg', 'Dairy', 'Soy', 'Wheat', 'Fish', 'Shellfish', 'Sesame', 'Tree Nut'];
+  // Family order for display with emojis and notes
+  const allergenFamilies: Record<string, { emoji: string; note?: string }> = {
+    'Dairy': { emoji: '🥛', note: 'Lactose intolerance ≠ milk allergy' },
+    'Peanut': { emoji: '🥜', note: 'Peanuts are NOT tree nuts' },
+    'Tree Nut': { emoji: '🌰', note: 'One nut safe ≠ all nuts safe' },
+    'Soy': { emoji: '🌱' },
+    'Wheat': { emoji: '🌾', note: 'Wheat allergy ≠ celiac disease' },
+    'Fish': { emoji: '🐟', note: 'One fish safe ≠ all fish safe' },
+    'Shellfish': { emoji: '🦐', note: 'Shellfish ≠ fish (separate groups)' },
+    'Sesame': { emoji: '🌰' },
+    'Egg': { emoji: '🥚' },
+  };
+  const familyOrder = ['Dairy', 'Peanut', 'Tree Nut', 'Soy', 'Wheat', 'Fish', 'Shellfish', 'Sesame', 'Egg'];
 
   // Filter and group allergens based on search
   const filteredGroups = useMemo(() => {
@@ -403,11 +414,17 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    {getGroupStatusIcon(group.status)}
+                    <span className="text-2xl">{allergenFamilies[group.family]?.emoji || '🍽️'}</span>
                     <div className="text-left">
-                      <h3 className="font-bold text-foreground">{group.family}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-foreground">{group.family}</h3>
+                        {getGroupStatusIcon(group.status)}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {group.safeCount}/{group.totalCount} cleared
+                        {allergenFamilies[group.family]?.note && (
+                          <span className="ml-1 text-primary/70">• {allergenFamilies[group.family].note}</span>
+                        )}
                       </p>
                     </div>
                   </div>
