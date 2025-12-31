@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.d28991905c454dcf80e3079d6c336c50',
+  appId: 'com.tinypalate.app',
   appName: 'TinyPalate',
   webDir: 'dist',
   // Comment out for local iOS/Android testing - use local dist folder instead of remote URL
