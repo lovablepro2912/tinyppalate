@@ -61,19 +61,24 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
     : null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
-        onClick={onClose}
-      >
+    <AnimatePresence mode="wait">
+      {food && (
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          className={cn(
+          key="log-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            key="log-modal-content"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={cn(
             "w-full max-w-md bg-card rounded-3xl card-shadow overflow-hidden transition-all duration-300",
             hasReaction && "ring-4 ring-danger/60"
           )}
@@ -151,21 +156,11 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
                 </div>
 
                 {/* Reaction Details */}
-                <AnimatePresence>
-                  {hasReaction && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="space-y-4 overflow-hidden"
-                    >
-                      {/* Severe Warning Banner */}
-                      {isSevere && (
-                        <motion.div
-                          initial={{ scale: 0.95, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="flex items-center gap-3 p-4 bg-danger rounded-2xl"
-                        >
+                {hasReaction && (
+                  <div className="space-y-4">
+                    {/* Severe Warning Banner */}
+                    {isSevere && (
+                      <div className="flex items-center gap-3 p-4 bg-danger rounded-2xl">
                           <AlertOctagon className="w-6 h-6 text-danger-foreground flex-shrink-0" />
                           <div>
                             <p className="font-bold text-danger-foreground">
@@ -174,9 +169,9 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
                             <p className="text-sm text-danger-foreground/90">
                               Severe symptoms detected. Call emergency services if breathing is affected.
                             </p>
-                          </div>
-                        </motion.div>
-                      )}
+                      </div>
+                    </div>
+                  )}
 
                       {/* Symptoms */}
                       <div>
@@ -221,10 +216,9 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
                           {autoSeverity === 1 && "🟡 Mild reaction detected"}
                           {autoSeverity === 2 && "🔴 Severe reaction detected"}
                         </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
+                  </div>
+                )}
 
                 {/* Notes */}
                 <div>
@@ -257,8 +251,9 @@ export function LogFoodModal({ food, onClose, showSafetyWarning = false }: LogFo
               </motion.div>
             )}
           </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </AnimatePresence>
   );
 }

@@ -61,7 +61,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
 
   const handleClose = () => {
     setIsVisible(false);
-    setTimeout(onClose, 300);
+    onClose();
   };
 
   const handleLogFood = () => {
@@ -94,7 +94,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isVisible && (
         <>
           {/* Backdrop */}
@@ -111,7 +111,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="fixed inset-x-0 bottom-0 z-50 max-h-[92vh] overflow-hidden rounded-t-3xl bg-background flex flex-col"
           >
             {/* Header with Food Info */}

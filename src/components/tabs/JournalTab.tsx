@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { Check, AlertTriangle, Siren, Search, X, FileText, ShieldAlert } from 'lucide-react';
 import { useFoodContext } from '@/contexts/FoodContext';
@@ -152,15 +151,9 @@ export function JournalTab() {
             )}
           </div>
         ) : (
-          <AnimatePresence mode="popLayout">
-            {sortedDates.map((dateKey, dateIndex) => (
-              <motion.div
-                key={dateKey}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: dateIndex * 0.05 }}
-                className="mb-6"
-              >
+          <div>
+            {sortedDates.map((dateKey) => (
+              <div key={dateKey} className="mb-6">
                 {/* Date Header */}
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-sm font-semibold text-foreground">
@@ -171,12 +164,9 @@ export function JournalTab() {
 
                 {/* Log Cards */}
                 <div className="space-y-2">
-                  {groupedLogs[dateKey].map((log, logIndex) => (
-                    <motion.button
+                  {groupedLogs[dateKey].map((log) => (
+                    <button
                       key={log.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: dateIndex * 0.05 + logIndex * 0.03 }}
                       onClick={() => setSelectedLog(log)}
                       className={cn(
                         "w-full flex items-center gap-4 p-4 rounded-xl transition-all",
@@ -226,12 +216,12 @@ export function JournalTab() {
                           </span>
                         )}
                       </div>
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </AnimatePresence>
+          </div>
         )}
       </div>
 
