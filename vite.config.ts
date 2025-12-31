@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "icon-*.png"],
       manifest: false, // Use existing manifest.json
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB limit
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
           {

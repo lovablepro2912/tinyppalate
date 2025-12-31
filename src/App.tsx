@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { PWAPrompt } from "@/components/PWAPrompt";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { SplashScreen } from "@/components/SplashScreen";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -102,20 +104,35 @@ function AppRoutes() {
   );
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <OfflineIndicator />
-      <PWAPrompt />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function AppWithSplash() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    // Hide splash after 1.5 seconds
+    const timer = setTimeout(() => setShowSplash(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <>
+      <SplashScreen isVisible={showSplash} />
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <OfflineIndicator />
+          <PWAPrompt />
+          <BrowserRouter>
+            <AuthProvider>
+              <AppRoutes />
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </>
+  );
+}
+
+const App = () => <AppWithSplash />;
 
 export default App;
