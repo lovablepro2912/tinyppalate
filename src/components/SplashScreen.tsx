@@ -24,7 +24,7 @@ export function SplashScreen({ isVisible }: SplashScreenProps) {
             <motion.img
               src={splashLogo}
               alt="TinyPalate"
-              className="w-24 h-24"
+              className="w-40 h-40"
               animate={{ 
                 scale: [1, 1.05, 1],
               }}
@@ -34,10 +34,6 @@ export function SplashScreen({ isVisible }: SplashScreenProps) {
                 ease: 'easeInOut'
               }}
             />
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-foreground">TinyPalate</h1>
-              <p className="text-sm text-muted-foreground mt-1">100 Foods Before 1</p>
-            </div>
             <motion.div
               className="w-12 h-1 bg-primary/20 rounded-full overflow-hidden mt-4"
             >

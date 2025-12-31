@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Loader2, Sparkles } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -91,21 +92,13 @@ export default function Auth() {
         <div className="bg-card/95 backdrop-blur-sm rounded-3xl p-8 card-shadow border border-border/50">
           {/* Logo */}
           <div className="text-center mb-8">
-            <motion.div
-              className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent flex items-center justify-center mx-auto mb-4 relative"
+            <motion.img
+              src={logo}
+              alt="TinyPalate"
+              className="w-32 h-32 mx-auto mb-4"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
-            >
-              <span className="text-5xl">👶</span>
-              <motion.div
-                className="absolute -top-1 -right-1"
-                animate={{ rotate: [0, 15, -15, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Sparkles className="w-6 h-6 text-warning" />
-              </motion.div>
-            </motion.div>
-            <h1 className="text-3xl font-bold text-foreground">TinyPalate</h1>
+            />
             <p className="text-muted-foreground mt-2 text-lg">
               {isSignUp ? "Start your baby's delicious journey" : "Welcome back, foodie! 🥄"}
             </p>
