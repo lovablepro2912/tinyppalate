@@ -489,6 +489,21 @@ export function FoodProvider({ children }: { children: ReactNode }) {
   }, [foods, userFoodStates, user, profile]);
 
   const updateLog = useCallback(async (logId: string, updates: LogUpdate) => {
+    // Find the original log for rollback
+    const originalLog = logs.find(l => l.id === logId);
+    if (!originalLog) return;
+
+    // OPTIMISTIC UPDATE: Apply changes immediately
+    setLogs(prev => prev.map(l => {
+      if (l.id !== logId) return l;
+      return {
+        ...l,
+        ...(updates.reaction_severity !== undefined && { reaction_severity: updates.reaction_severity }),
+        ...(updates.notes !== undefined && { notes: updates.notes }),
+        ...(updates.created_at !== undefined && { created_at: updates.created_at }),
+      };
+    }));
+
     try {
       await supabase
         .from('food_logs')
@@ -498,29 +513,41 @@ export function FoodProvider({ children }: { children: ReactNode }) {
           ...(updates.created_at !== undefined && { created_at: updates.created_at }),
         })
         .eq('id', logId);
-      
-      await refreshData();
     } catch (error) {
+      // Rollback on error
+      setLogs(prev => prev.map(l => l.id === logId ? originalLog : l));
       if (import.meta.env.DEV) console.error('Error updating log:', error);
       toast.error('Failed to update log. Please try again.');
       throw error;
     }
-  }, [refreshData]);
+  }, [logs]);
 
   const deleteLog = useCallback(async (logId: string) => {
+    // Find the original log for rollback
+    const originalLog = logs.find(l => l.id === logId);
+    const originalIndex = logs.findIndex(l => l.id === logId);
+    if (!originalLog) return;
+
+    // OPTIMISTIC UPDATE: Remove immediately
+    setLogs(prev => prev.filter(l => l.id !== logId));
+
     try {
       await supabase
         .from('food_logs')
         .delete()
         .eq('id', logId);
-      
-      await refreshData();
     } catch (error) {
+      // Rollback on error - insert back at original position
+      setLogs(prev => {
+        const newLogs = [...prev];
+        newLogs.splice(originalIndex, 0, originalLog);
+        return newLogs;
+      });
       if (import.meta.env.DEV) console.error('Error deleting log:', error);
       toast.error('Failed to delete log. Please try again.');
       throw error;
     }
-  }, [refreshData]);
+  }, [logs]);
 
   const updateProfile = useCallback(async (updates: ProfileUpdate) => {
     if (!user) return;
