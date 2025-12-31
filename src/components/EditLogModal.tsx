@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Calendar, Clock, AlertOctagon } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -240,9 +239,8 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
               <label className="text-sm font-medium text-foreground">Reaction Status</label>
               <div className="space-y-2">
                 {reactionOptions.map((option) => (
-                  <motion.button
+                  <button
                     key={option.value}
-                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleSeverityChange(option.value)}
                     className={cn(
                       "w-full p-4 rounded-xl border-2 text-left transition-all",
@@ -268,27 +266,17 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
                       {option.label}
                     </p>
                     <p className="text-sm text-muted-foreground">{option.description}</p>
-                  </motion.button>
+                  </button>
                 ))}
               </div>
             </div>
 
             {/* Symptoms Selector - Show when reaction is selected */}
-            <AnimatePresence>
-              {reactionSeverity > 0 && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="space-y-4 overflow-hidden"
-                >
-                  {/* Severe Warning Banner */}
-                  {isSevere && (
-                    <motion.div
-                      initial={{ scale: 0.95, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="flex items-center gap-3 p-4 bg-danger rounded-2xl"
-                    >
+            {reactionSeverity > 0 && (
+              <div className="space-y-4">
+                {/* Severe Warning Banner */}
+                {isSevere && (
+                  <div className="flex items-center gap-3 p-4 bg-danger rounded-2xl">
                       <AlertOctagon className="w-6 h-6 text-danger-foreground flex-shrink-0" />
                       <div>
                         <p className="font-bold text-danger-foreground">
@@ -297,9 +285,9 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
                         <p className="text-sm text-danger-foreground/90">
                           This entry indicates a serious allergic event.
                         </p>
-                      </div>
-                    </motion.div>
-                  )}
+                    </div>
+                  </div>
+                )}
 
                   {/* Symptoms */}
                   <div>
@@ -344,10 +332,9 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
                       {autoSeverity === 1 && "🟡 Mild reaction symptoms"}
                       {autoSeverity === 2 && "🔴 Severe reaction symptoms"}
                     </p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+              </div>
+            )}
 
             {/* Notes */}
             <div className="space-y-2">
