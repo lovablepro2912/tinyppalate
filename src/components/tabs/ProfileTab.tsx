@@ -2,24 +2,28 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Baby, Calendar, Trophy, TrendingUp, BookOpen, Pencil, LogOut, Trash2, ChevronRight, ExternalLink } from 'lucide-react';
+import { Baby, Calendar, Trophy, TrendingUp, BookOpen, Pencil, LogOut, Trash2, ChevronRight, ExternalLink, Award } from 'lucide-react';
 import { differenceInMonths, differenceInDays, format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { OnboardingGuideSheet } from '@/components/onboarding/OnboardingGuideSheet';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
 import { NotificationSettings } from '@/components/NotificationSettings';
+import { AchievementsSheet } from '@/components/AchievementsSheet';
 import { useHaptics } from '@/hooks/useHaptics';
+import { useAchievements } from '@/hooks/useAchievements';
 import { APP_CONFIG } from '@/config/app';
 
 export function ProfileTab() {
   const [guideOpen, setGuideOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
   
   const { profile, getTriedCount, getAllergenFoods, logs } = useFoodContext();
   const { user, signOut } = useAuth();
   const { medium } = useHaptics();
+  const { getUnlockedCount, getTotalCount } = useAchievements();
   
   const birthDate = new Date(profile.birth_date);
   const now = new Date();
@@ -139,6 +143,30 @@ export function ProfileTab() {
         </p>
       </motion.div>
 
+      {/* Achievements Button */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="mb-4"
+      >
+        <button
+          onClick={() => { medium(); setAchievementsOpen(true); }}
+          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <Award className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-white">Achievements</p>
+              <p className="text-xs text-white/80">{getUnlockedCount()} of {getTotalCount()} unlocked</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/80" />
+        </button>
+      </motion.div>
+
       {/* View Guide Button */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -246,6 +274,11 @@ export function ProfileTab() {
       <DeleteAccountDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
+      />
+      
+      <AchievementsSheet
+        open={achievementsOpen}
+        onOpenChange={setAchievementsOpen}
       />
     </div>
   );
