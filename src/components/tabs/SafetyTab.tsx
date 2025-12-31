@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { PoisonControlBanner } from '@/components/PoisonControlBanner';
 
@@ -101,10 +101,30 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
       .filter(group => group.foods.length > 0); // Only show groups with matching foods
   }, [allergens, searchQuery]);
 
-  // Track which groups are open - default to all open
+  const STORAGE_KEY = 'allergen-protocol-open-groups';
+
+  // Track which groups are open - default to all collapsed, load from localStorage
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
-    return new Set(familyOrder);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return new Set(parsed);
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+    return new Set(); // Default to all collapsed
   });
+
+  // Persist to localStorage when openGroups changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...openGroups]));
+    } catch (e) {
+      // Ignore storage errors
+    }
+  }, [openGroups]);
 
   const toggleGroup = (family: string) => {
     setOpenGroups(prev => {
@@ -116,6 +136,14 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
       }
       return next;
     });
+  };
+
+  const expandAll = () => {
+    setOpenGroups(new Set(familyOrder));
+  };
+
+  const collapseAll = () => {
+    setOpenGroups(new Set());
   };
 
   const getGroupStatusIcon = (status: GroupStatus) => {
@@ -359,9 +387,9 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
         </div>
       </motion.div>
 
-      {/* Search Bar */}
+      {/* Search Bar and Expand/Collapse */}
       <motion.div
-        className="mb-4"
+        className="mb-4 space-y-3"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
@@ -383,6 +411,24 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
               <X className="w-4 h-4" />
             </button>
           )}
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={expandAll}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Expand All
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={collapseAll}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Collapse All
+          </Button>
         </div>
       </motion.div>
 
