@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { FoodProvider } from '@/contexts/FoodContext';
 import { BottomNav } from '@/components/BottomNav';
 import { FoodPickerModal } from '@/components/FoodPickerModal';
@@ -11,6 +12,9 @@ import { ProfileTab } from '@/components/tabs/ProfileTab';
 import { FoodWithState } from '@/types/food';
 
 function AppContent() {
+  // Initialize push notifications for native platforms
+  usePushNotifications();
+  
   const [activeTab, setActiveTab] = useState('home');
   const [showPicker, setShowPicker] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodWithState | null>(null);

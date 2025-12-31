@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Capacitor } from '@capacitor/core';
+import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -109,7 +111,13 @@ function AppWithSplash() {
 
   useEffect(() => {
     // Hide splash after 1.5 seconds
-    const timer = setTimeout(() => setShowSplash(false), 1500);
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+      // Hide native splash screen on Capacitor
+      if (Capacitor.isNativePlatform()) {
+        CapacitorSplashScreen.hide();
+      }
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
