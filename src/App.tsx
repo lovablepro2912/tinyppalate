@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -105,6 +106,7 @@ function AppRoutes() {
       } />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
+      <Route path="/landing" element={<Landing />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
