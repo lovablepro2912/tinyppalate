@@ -49,6 +49,59 @@ export type Database = {
           },
         ]
       }
+      food_exposures: {
+        Row: {
+          age_at_exposure_months: number | null
+          confirmed_safe: boolean
+          created_at: string
+          date_introduced: string
+          exposure_count: number
+          food_id: string
+          id: string
+          photo_url: string | null
+          reaction: Database["public"]["Enums"]["reaction_severity"]
+          reaction_notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age_at_exposure_months?: number | null
+          confirmed_safe?: boolean
+          created_at?: string
+          date_introduced?: string
+          exposure_count?: number
+          food_id: string
+          id?: string
+          photo_url?: string | null
+          reaction?: Database["public"]["Enums"]["reaction_severity"]
+          reaction_notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age_at_exposure_months?: number | null
+          confirmed_safe?: boolean
+          created_at?: string
+          date_introduced?: string
+          exposure_count?: number
+          food_id?: string
+          id?: string
+          photo_url?: string | null
+          reaction?: Database["public"]["Enums"]["reaction_severity"]
+          reaction_notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_exposures_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       food_logs: {
         Row: {
           created_at: string
@@ -86,6 +139,95 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      food_serving_guidelines: {
+        Row: {
+          age_range: Database["public"]["Enums"]["age_range"]
+          choking_warning: boolean
+          created_at: string
+          food_id: string
+          id: string
+          serving_notes: string
+          texture: Database["public"]["Enums"]["texture_type"]
+        }
+        Insert: {
+          age_range: Database["public"]["Enums"]["age_range"]
+          choking_warning?: boolean
+          created_at?: string
+          food_id: string
+          id?: string
+          serving_notes: string
+          texture: Database["public"]["Enums"]["texture_type"]
+        }
+        Update: {
+          age_range?: Database["public"]["Enums"]["age_range"]
+          choking_warning?: boolean
+          created_at?: string
+          food_id?: string
+          id?: string
+          serving_notes?: string
+          texture?: Database["public"]["Enums"]["texture_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_serving_guidelines_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      foods: {
+        Row: {
+          active: boolean
+          allergen_type: Database["public"]["Enums"]["allergen_type"] | null
+          category: Database["public"]["Enums"]["food_category"]
+          choking_risk: boolean
+          created_at: string
+          emoji: string
+          excluded_under_12m: boolean
+          food_name: string
+          id: string
+          image_url: string | null
+          is_allergen: boolean
+          min_age_months: number
+          prep_notes: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          allergen_type?: Database["public"]["Enums"]["allergen_type"] | null
+          category: Database["public"]["Enums"]["food_category"]
+          choking_risk?: boolean
+          created_at?: string
+          emoji?: string
+          excluded_under_12m?: boolean
+          food_name: string
+          id?: string
+          image_url?: string | null
+          is_allergen?: boolean
+          min_age_months?: number
+          prep_notes: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          allergen_type?: Database["public"]["Enums"]["allergen_type"] | null
+          category?: Database["public"]["Enums"]["food_category"]
+          choking_risk?: boolean
+          created_at?: string
+          emoji?: string
+          excluded_under_12m?: boolean
+          food_name?: string
+          id?: string
+          image_url?: string | null
+          is_allergen?: boolean
+          min_age_months?: number
+          prep_notes?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       general_tips: {
         Row: {
@@ -334,7 +476,33 @@ export type Database = {
       delete_user_account: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      age_range: "6_9_months" | "9_12_months" | "12_24_months"
+      allergen_type:
+        | "egg"
+        | "dairy"
+        | "peanut"
+        | "tree_nut"
+        | "sesame"
+        | "soy"
+        | "wheat"
+        | "fish"
+        | "shellfish"
+      food_category:
+        | "Dairy"
+        | "Fruit"
+        | "Vegetable"
+        | "Grain"
+        | "Legume"
+        | "Protein"
+      reaction_severity: "none" | "mild" | "moderate" | "severe"
+      texture_type:
+        | "puree"
+        | "mashed"
+        | "finely_chopped"
+        | "minced"
+        | "shredded"
+        | "soft_strips"
+        | "bite_sized"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -461,6 +629,37 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      age_range: ["6_9_months", "9_12_months", "12_24_months"],
+      allergen_type: [
+        "egg",
+        "dairy",
+        "peanut",
+        "tree_nut",
+        "sesame",
+        "soy",
+        "wheat",
+        "fish",
+        "shellfish",
+      ],
+      food_category: [
+        "Dairy",
+        "Fruit",
+        "Vegetable",
+        "Grain",
+        "Legume",
+        "Protein",
+      ],
+      reaction_severity: ["none", "mild", "moderate", "severe"],
+      texture_type: [
+        "puree",
+        "mashed",
+        "finely_chopped",
+        "minced",
+        "shredded",
+        "soft_strips",
+        "bite_sized",
+      ],
+    },
   },
 } as const
