@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Calendar, Clock, AlertOctagon } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -64,6 +64,31 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
+  // Touch handling to prevent horizontal drift on iOS
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    }
+  }, []);
+  
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current || e.touches.length !== 1) return;
+    
+    const deltaX = Math.abs(e.touches[0].clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(e.touches[0].clientY - touchStartRef.current.y);
+    
+    // If horizontal movement is greater than vertical, prevent it
+    if (deltaX > deltaY && deltaX > 10) {
+      e.preventDefault();
+    }
+  }, []);
 
   // Reset form when log changes
   useEffect(() => {
@@ -141,9 +166,10 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
           style={{
-            touchAction: 'none',
+            touchAction: 'pan-y',
             userSelect: 'none',
             WebkitUserSelect: 'none',
+            overscrollBehavior: 'contain',
           }}
         >
           <SheetHeader className="pb-4">
@@ -154,7 +180,10 @@ export function EditLogModal({ log, onClose }: EditLogModalProps) {
           </SheetHeader>
 
           <div 
-            className="space-y-5 overflow-y-auto pb-6 h-[calc(100%-60px)]"
+            ref={scrollContainerRef}
+            className="space-y-5 overflow-y-auto overflow-x-hidden pb-6 h-[calc(100%-60px)]"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
             style={{ 
               touchAction: 'pan-y',
               overscrollBehavior: 'contain',
