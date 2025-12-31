@@ -200,6 +200,25 @@ export function FoodProvider({ children }: { children: ReactNode }) {
           notes,
         });
 
+      // Check for milestones and send notification
+      const newTriedCount = userFoodStates.filter(s => s.status === 'SAFE' || s.status === 'TRYING').length + (existingState ? 0 : 1);
+      const milestones = [10, 25, 50, 75, 100];
+      if (milestones.includes(newTriedCount)) {
+        try {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              user_id: user.id,
+              title: 'Milestone Achieved! 🎉',
+              body: `${profile?.baby_name || 'Your baby'} has tried ${newTriedCount} different foods!`,
+              notification_type: 'milestone',
+              reference_id: String(newTriedCount)
+            }
+          });
+        } catch (e) {
+          console.log('Milestone notification failed:', e);
+        }
+      }
+
       // Refresh data
       await refreshData();
     } catch (error) {
