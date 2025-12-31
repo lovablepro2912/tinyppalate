@@ -162,6 +162,10 @@
   }
 
   /* iOS Safe Area utilities */
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 8px);
+  }
+
   .safe-area-top {
     padding-top: env(safe-area-inset-top);
   }
