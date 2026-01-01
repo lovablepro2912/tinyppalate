@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Capacitor } from '@capacitor/core';
-import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen as CapacitorSplashScreen } from "@capacitor/splash-screen";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,7 +23,7 @@ const queryClient = new QueryClient();
 
 // Check if running on native platform or in development mode
 // TEMP: Allow web access for testing (set to true to enable web access)
-const ALLOW_WEB_ACCESS = true;
+const ALLOW_WEB_ACCESS = false;
 const isNativePlatform = Capacitor.isNativePlatform() || import.meta.env.DEV || ALLOW_WEB_ACCESS;
 
 // Download App page for web visitors
@@ -35,31 +35,27 @@ function DownloadAppPage() {
         <div className="w-24 h-24 mx-auto bg-primary rounded-3xl flex items-center justify-center shadow-lg">
           <span className="text-5xl">🍼</span>
         </div>
-        
+
         {/* App Name & Message */}
         <div className="space-y-3">
           <h1 className="text-3xl font-bold text-foreground">TinyPalate</h1>
-          <p className="text-lg text-muted-foreground">
-            Track your baby's food journey with confidence
-          </p>
+          <p className="text-lg text-muted-foreground">Track your baby's food journey with confidence</p>
         </div>
-        
+
         {/* Download Message */}
         <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
-          <p className="text-foreground font-medium mb-4">
-            TinyPalate is available on iOS
-          </p>
+          <p className="text-foreground font-medium mb-4">TinyPalate is available on iOS</p>
           <p className="text-sm text-muted-foreground">
             Download the app to start tracking allergens, logging meals, and monitoring your baby's food introductions.
           </p>
         </div>
-        
+
         {/* Store Buttons */}
         <div className="flex flex-col gap-4 items-center">
           <Button
             size="lg"
             className="gap-2 bg-foreground text-background hover:bg-foreground/90 w-full sm:w-auto"
-            onClick={() => window.open('https://apps.apple.com/app/tinypalate', '_blank')}
+            onClick={() => window.open("https://apps.apple.com/app/tinypalate", "_blank")}
           >
             <Apple className="h-5 w-5" />
             App Store
@@ -77,7 +73,7 @@ function DownloadAppPage() {
             <span className="text-xs text-muted-foreground">Coming Soon</span>
           </div>
         </div>
-        
+
         {/* Legal Links */}
         <div className="flex gap-4 justify-center text-sm text-muted-foreground">
           <Link to="/privacy" className="hover:text-foreground transition-colors">
@@ -105,11 +101,11 @@ function LoadingSpinner() {
 // Protected route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, needsOnboarding } = useAuth();
-  
+
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
@@ -117,18 +113,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (needsOnboarding) {
     return <Navigate to="/onboarding" replace />;
   }
-  
+
   return <>{children}</>;
 }
 
 // Onboarding route wrapper
 function OnboardingRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, needsOnboarding } = useAuth();
-  
+
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
@@ -136,25 +132,25 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
   if (!needsOnboarding) {
     return <Navigate to="/" replace />;
   }
-  
+
   return <>{children}</>;
 }
 
 // Auth route wrapper (redirects to home if already logged in)
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, needsOnboarding } = useAuth();
-  
+
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   if (user) {
     if (needsOnboarding) {
       return <Navigate to="/onboarding" replace />;
     }
     return <Navigate to="/" replace />;
   }
-  
+
   return <>{children}</>;
 }
 
@@ -170,33 +166,40 @@ function NativeOnlyRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/auth" element={
-        <NativeOnlyRoute>
-          <AuthRoute>
-            <Auth />
-          </AuthRoute>
-        </NativeOnlyRoute>
-      } />
-      <Route path="/onboarding" element={
-        <NativeOnlyRoute>
-          <OnboardingRoute>
-            <Onboarding />
-          </OnboardingRoute>
-        </NativeOnlyRoute>
-      } />
-      <Route path="/" element={
-        <NativeOnlyRoute>
-          <ProtectedRoute>
-            <Index />
-          </ProtectedRoute>
-        </NativeOnlyRoute>
-      } />
+      <Route
+        path="/auth"
+        element={
+          <NativeOnlyRoute>
+            <AuthRoute>
+              <Auth />
+            </AuthRoute>
+          </NativeOnlyRoute>
+        }
+      />
+      <Route
+        path="/onboarding"
+        element={
+          <NativeOnlyRoute>
+            <OnboardingRoute>
+              <Onboarding />
+            </OnboardingRoute>
+          </NativeOnlyRoute>
+        }
+      />
+      <Route
+        path="/"
+        element={
+          <NativeOnlyRoute>
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          </NativeOnlyRoute>
+        }
+      />
       {/* Legal pages remain accessible on web for App Store compliance */}
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
-      <Route path="*" element={
-        isNativePlatform ? <NotFound /> : <DownloadAppPage />
-      } />
+      <Route path="*" element={isNativePlatform ? <NotFound /> : <DownloadAppPage />} />
     </Routes>
   );
 }
@@ -206,7 +209,7 @@ function AppWithSplash() {
 
   useEffect(() => {
     if (!isNativePlatform) return;
-    
+
     // Hide splash after 1.5 seconds on native
     const timer = setTimeout(() => {
       setShowSplash(false);
