@@ -45,7 +45,7 @@ function DownloadAppPage() {
         {/* Download Message */}
         <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
           <p className="text-foreground font-medium mb-4">
-            TinyPalate is available on iOS and Android
+            TinyPalate is available on iOS
           </p>
           <p className="text-sm text-muted-foreground">
             Download the app to start tracking allergens, logging meals, and monitoring your baby's food introductions.
@@ -53,24 +53,27 @@ function DownloadAppPage() {
         </div>
         
         {/* Store Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col gap-4 items-center">
           <Button
             size="lg"
-            className="gap-2 bg-foreground text-background hover:bg-foreground/90"
+            className="gap-2 bg-foreground text-background hover:bg-foreground/90 w-full sm:w-auto"
             onClick={() => window.open('https://apps.apple.com/app/tinypalate', '_blank')}
           >
             <Apple className="h-5 w-5" />
             App Store
           </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="gap-2"
-            onClick={() => window.open('https://play.google.com/store/apps/details?id=app.tinypalate', '_blank')}
-          >
-            <Smartphone className="h-5 w-5" />
-            Google Play
-          </Button>
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              size="lg"
+              variant="outline"
+              className="gap-2 opacity-50 cursor-not-allowed w-full sm:w-auto"
+              disabled
+            >
+              <Smartphone className="h-5 w-5" />
+              Google Play
+            </Button>
+            <span className="text-xs text-muted-foreground">Coming Soon</span>
+          </div>
         </div>
         
         {/* Legal Links */}
