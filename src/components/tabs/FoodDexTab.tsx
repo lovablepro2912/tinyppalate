@@ -145,10 +145,10 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
           <Select value={currentCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full h-12 rounded-xl bg-card border-border text-base font-medium">
               <SelectValue placeholder="Select category">
-                <span className="flex items-center gap-2">
-                  <span>{getCategoryEmoji(currentCategory)}</span>
-                  <span>{currentCategory}</span>
-                  <span className="text-muted-foreground text-sm ml-1">
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className="flex-shrink-0">{getCategoryEmoji(currentCategory)}</span>
+                  <span className="truncate">{currentCategory}</span>
+                  <span className="text-muted-foreground text-sm flex-shrink-0">
                     ({foodsByCategory[currentCategory]?.length || 0})
                   </span>
                 </span>
