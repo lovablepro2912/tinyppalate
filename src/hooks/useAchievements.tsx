@@ -12,6 +12,16 @@ interface UserAchievement {
   unlocked_at: string;
 }
 
+// Achievements that can be revoked when criteria are no longer met
+const REVOCABLE_ACHIEVEMENTS = [
+  'first_food', 'foods_10', 'foods_25', 'foods_50', 'foods_75', 'foods_100',
+  'logs_10', 'logs_50', 'logs_100',
+  'first_allergen', 'dairy_complete', 'egg_complete', 'peanut_complete',
+  'tree_nut_complete', 'soy_complete', 'wheat_complete', 'fish_complete',
+  'shellfish_complete', 'sesame_complete', 'all_allergens',
+  'category_fruits', 'category_vegetables', 'category_proteins',
+];
+
 export function useAchievements() {
   const { user } = useAuth();
   const { userFoodStates, foods, logs } = useFoodContext();
@@ -82,6 +92,31 @@ export function useAchievements() {
     }
   }, [user, unlockedAchievements, fetchAchievements]);
 
+  // Revoke an achievement that's no longer valid
+  const revokeAchievement = useCallback(async (achievementId: string) => {
+    if (!user) return;
+    
+    // Only revoke if currently unlocked
+    const existingAchievement = unlockedAchievements.find(a => a.achievement_id === achievementId);
+    if (!existingAchievement) return;
+    
+    // Only revoke if it's a revocable achievement
+    if (!REVOCABLE_ACHIEVEMENTS.includes(achievementId)) return;
+
+    try {
+      await supabase
+        .from('user_achievements')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('achievement_id', achievementId);
+
+      // Update local state immediately
+      setUnlockedAchievements(prev => prev.filter(a => a.achievement_id !== achievementId));
+    } catch (error) {
+      console.error('Error revoking achievement:', error);
+    }
+  }, [user, unlockedAchievements]);
+
   // Celebration effect for new achievement
   const celebrateAchievement = (achievement: Achievement) => {
     const colors = {
@@ -110,7 +145,7 @@ export function useAchievements() {
     );
   };
 
-  // Check and unlock achievements based on current state
+  // Check and unlock/revoke achievements based on current state
   const checkAchievements = useCallback(async () => {
     if (!user || loading) return;
 
@@ -153,21 +188,38 @@ export function useAchievements() {
       }
     });
 
-    // Check milestone achievements
+    // Check milestone achievements - unlock if met, revoke if not
     if (triedCount >= 1) await unlockAchievement('first_food');
+    else await revokeAchievement('first_food');
+    
     if (triedCount >= 10) await unlockAchievement('foods_10');
+    else await revokeAchievement('foods_10');
+    
     if (triedCount >= 25) await unlockAchievement('foods_25');
+    else await revokeAchievement('foods_25');
+    
     if (triedCount >= 50) await unlockAchievement('foods_50');
+    else await revokeAchievement('foods_50');
+    
     if (triedCount >= 75) await unlockAchievement('foods_75');
+    else await revokeAchievement('foods_75');
+    
     if (triedCount >= 100) await unlockAchievement('foods_100');
+    else await revokeAchievement('foods_100');
 
     // Check log count achievements
     if (logCount >= 10) await unlockAchievement('logs_10');
+    else await revokeAchievement('logs_10');
+    
     if (logCount >= 50) await unlockAchievement('logs_50');
+    else await revokeAchievement('logs_50');
+    
     if (logCount >= 100) await unlockAchievement('logs_100');
+    else await revokeAchievement('logs_100');
 
     // Check allergen achievements
     if (safeAllergens.length >= 1) await unlockAchievement('first_allergen');
+    else await revokeAchievement('first_allergen');
 
     // Check family completions
     const familyAchievementMap: Record<string, string> = {
@@ -184,30 +236,40 @@ export function useAchievements() {
 
     let allFamiliesComplete = true;
     familyStatus.forEach((data, family) => {
-      if (data.safe === data.total && data.total > 0) {
-        const achievementId = familyAchievementMap[family];
-        if (achievementId) {
+      const achievementId = familyAchievementMap[family];
+      if (achievementId) {
+        if (data.safe === data.total && data.total > 0) {
           unlockAchievement(achievementId);
+        } else {
+          revokeAchievement(achievementId);
+          allFamiliesComplete = false;
         }
-      } else {
+      } else if (data.safe < data.total) {
         allFamiliesComplete = false;
       }
     });
 
     if (allFamiliesComplete && familyStatus.size >= 9) {
       await unlockAchievement('all_allergens');
+    } else {
+      await revokeAchievement('all_allergens');
     }
 
     // Check category achievements
     if ((categoryCounts.get('fruit') || 0) >= 10) await unlockAchievement('category_fruits');
+    else await revokeAchievement('category_fruits');
+    
     if ((categoryCounts.get('vegetable') || 0) >= 10) await unlockAchievement('category_vegetables');
+    else await revokeAchievement('category_vegetables');
+    
     if ((categoryCounts.get('protein') || 0) >= 10) await unlockAchievement('category_proteins');
+    else await revokeAchievement('category_proteins');
 
-  }, [user, loading, userFoodStates, foods, logs, unlockAchievement]);
+  }, [user, loading, userFoodStates, foods, logs, unlockAchievement, revokeAchievement]);
 
   // Run achievement check when data changes
   useEffect(() => {
-    if (!loading && userFoodStates.length > 0) {
+    if (!loading && userFoodStates.length >= 0) {
       checkAchievements();
     }
   }, [userFoodStates, logs, loading]);
