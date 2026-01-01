@@ -22,7 +22,9 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Check if running on native platform or in development mode
-const isNativePlatform = Capacitor.isNativePlatform() || import.meta.env.DEV;
+// TEMP: Allow web access for testing (set to true to enable web access)
+const ALLOW_WEB_ACCESS = true;
+const isNativePlatform = Capacitor.isNativePlatform() || import.meta.env.DEV || ALLOW_WEB_ACCESS;
 
 // Download App page for web visitors
 function DownloadAppPage() {
@@ -200,7 +202,7 @@ function AppRoutes() {
 }
 
 function AppWithSplash() {
-  const [showSplash, setShowSplash] = useState(isNativePlatform);
+  const [showSplash, setShowSplash] = useState<boolean>(isNativePlatform);
 
   useEffect(() => {
     if (!isNativePlatform) return;
