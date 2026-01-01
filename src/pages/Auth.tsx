@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -262,6 +262,19 @@ export default function Auth() {
                     </span>
                   )}
                 </Button>
+
+                {isSignUp && (
+                  <p className="text-xs text-center text-muted-foreground mt-4">
+                    By creating an account, you agree to our{' '}
+                    <Link to="/terms" className="text-primary hover:underline">
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link to="/privacy" className="text-primary hover:underline">
+                      Privacy Policy
+                    </Link>
+                  </p>
+                )}
               </form>
 
               {/* Divider */}
