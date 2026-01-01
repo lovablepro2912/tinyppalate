@@ -12,13 +12,15 @@ serve(async (req) => {
   }
 
   try {
-    const { foodId, foodName } = await req.json();
+    const { foodId, foodName, description } = await req.json();
 
     if (!foodId || !foodName) {
       throw new Error("foodId and foodName are required");
     }
 
-    console.log(`Generating image for: ${foodName} (ID: ${foodId})`);
+    // Use custom description if provided, otherwise use food name
+    const foodDescription = description || foodName;
+    console.log(`Generating image for: ${foodName} (ID: ${foodId}) with description: ${foodDescription}`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -27,7 +29,7 @@ serve(async (req) => {
 
     // Generate image using Lovable AI with Gemini
     // Clarify food context to avoid confusion with characters (e.g., Peach from Mario)
-    const prompt = `Create a flat, minimal illustration of the FOOD item "${foodName}" (this is an edible food/fruit/vegetable, NOT a character or person) in a child-friendly style. Clean vector-like design with soft shadows, vibrant saturated colors, on a light pastel background (#f4f9fa). Single food item centered, realistic proportions, no text, no borders, no labels, no faces, no characters. Style similar to modern app icons. High quality, crisp edges.`;
+    const prompt = `Create a flat, minimal illustration of the FOOD item "${foodDescription}" (this is an edible food/fruit/vegetable, NOT a character or person) in a child-friendly style. Clean vector-like design with soft shadows, vibrant saturated colors, on a light pastel background (#f4f9fa). Single food item centered, realistic proportions, no text, no borders, no labels, no faces, no characters. Style similar to modern app icons. High quality, crisp edges.`;
 
     console.log(`Prompt: ${prompt}`);
 
