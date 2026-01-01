@@ -34,7 +34,7 @@ function FoodImage({ food }: { food: FoodWithState }) {
 
   if (hasImage) {
     return (
-      <div className="w-20 h-20 rounded-2xl bg-secondary/50 flex items-center justify-center overflow-hidden">
+      <div className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden">
         <img 
           src={food.image_url} 
           alt={food.name}

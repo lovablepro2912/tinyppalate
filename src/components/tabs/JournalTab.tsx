@@ -176,7 +176,7 @@ export function JournalTab() {
                       )}
                     >
                       {/* Food Icon */}
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center">
                         <FoodLogImage food={log.food} />
                       </div>
 
