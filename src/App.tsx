@@ -21,8 +21,8 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Check if running on native platform
-const isNativePlatform = Capacitor.isNativePlatform();
+// Check if running on native platform or in development mode
+const isNativePlatform = Capacitor.isNativePlatform() || import.meta.env.DEV;
 
 // Download App page for web visitors
 function DownloadAppPage() {
