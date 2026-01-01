@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,9 +15,41 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const { signUp, signIn, resetPassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await resetPassword(email);
+      if (error) throw error;
+      toast({
+        title: "Check your inbox! 📬",
+        description: "We've sent you a password reset link.",
+      });
+      setIsForgotPassword(false);
+    } catch (error: any) {
+      toast({
+        title: "Oops!",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,87 +132,160 @@ export default function Auth() {
               transition={{ type: "spring", stiffness: 300 }}
             />
             <p className="text-muted-foreground mt-2 text-lg">
-              {isSignUp ? "Start your baby's delicious journey" : "Welcome back, foodie! 🥄"}
+              {isForgotPassword
+                ? "Reset your password"
+                : isSignUp
+                ? "Start your baby's delicious journey"
+                : "Welcome back, foodie! 🥄"}
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <span>📧</span> Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="email"
-                  placeholder="parent@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12 h-12 rounded-xl bg-secondary/50 border-border/50 focus:bg-card transition-colors"
-                  required
-                />
+          {/* Forgot Password Form */}
+          {isForgotPassword ? (
+            <form onSubmit={handleForgotPassword} className="space-y-5">
+              <p className="text-sm text-muted-foreground text-center">
+                Enter your email and we'll send you a link to reset your password.
+              </p>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <span>📧</span> Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="parent@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-12 h-12 rounded-xl bg-secondary/50 border-border/50 focus:bg-card transition-colors"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <span>🔐</span> Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 h-12 rounded-xl bg-secondary/50 border-border/50 focus:bg-card transition-colors"
-                  required
-                  minLength={6}
-                />
+              <Button
+                type="submit"
+                className="w-full h-14 rounded-xl text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 shadow-lg hover:shadow-xl"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <span className="flex items-center gap-2">
+                    Send Reset Link <span className="text-xl">📬</span>
+                  </span>
+                )}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(false)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-primary font-medium hover:text-primary/80 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Sign In
+              </button>
+            </form>
+          ) : (
+            <>
+              {/* Regular Form */}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <span>📧</span> Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      placeholder="parent@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-12 h-12 rounded-xl bg-secondary/50 border-border/50 focus:bg-card transition-colors"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <span>🔐</span> Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-12 pr-12 h-12 rounded-xl bg-secondary/50 border-border/50 focus:bg-card transition-colors"
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    {isSignUp && <p className="text-xs text-muted-foreground">At least 6 characters</p>}
+                    {!isSignUp && (
+                      <button
+                        type="button"
+                        onClick={() => setIsForgotPassword(true)}
+                        className="text-xs text-primary hover:text-primary/80 transition-colors ml-auto"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-14 rounded-xl text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : isSignUp ? (
+                    <span className="flex items-center gap-2">
+                      Create Account <span className="text-xl"></span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      Sign In <span className="text-xl">👋</span>
+                    </span>
+                  )}
+                </Button>
+              </form>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border/50"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-card px-4 text-sm text-muted-foreground">
+                    {isSignUp ? "Already tracking?" : "New here?"}
+                  </span>
+                </div>
               </div>
-              {isSignUp && <p className="text-xs text-muted-foreground">At least 6 characters</p>}
-            </div>
 
-            <Button
-              type="submit"
-              className="w-full h-14 rounded-xl text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 shadow-lg hover:shadow-xl"
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : isSignUp ? (
-                <span className="flex items-center gap-2">
-                  Create Account <span className="text-xl"></span>
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  Sign In <span className="text-xl">👋</span>
-                </span>
-              )}
-            </Button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border/50"></div>
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-card px-4 text-sm text-muted-foreground">
-                {isSignUp ? "Already tracking?" : "New here?"}
-              </span>
-            </div>
-          </div>
-
-          {/* Toggle */}
-          <button
-            type="button"
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-primary/30 text-primary font-medium hover:bg-primary/5 transition-colors"
-          >
-            {isSignUp ? <span>Sign in to your account →</span> : <span>Create a new account →</span>}
-          </button>
+              {/* Toggle */}
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-primary/30 text-primary font-medium hover:bg-primary/5 transition-colors"
+              >
+                {isSignUp ? <span>Sign in to your account →</span> : <span>Create a new account →</span>}
+              </button>
+            </>
+          )}
         </div>
 
         {/* Footer */}
