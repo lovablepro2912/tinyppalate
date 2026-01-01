@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, AlertTriangle, Info } from "lucide-react";
+import { X, AlertTriangle, Info, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { FoodWithState } from "@/types/food";
@@ -191,7 +191,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
                     <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Info className="h-6 w-6 text-primary" />
+                          <UtensilsCrossed className="h-6 w-6 text-primary" />
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-foreground mb-2">How to Serve</h3>
