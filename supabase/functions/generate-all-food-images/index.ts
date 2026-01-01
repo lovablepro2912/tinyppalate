@@ -15,22 +15,28 @@ serve(async (req) => {
   }
 
   try {
-    const { batchSize = 10, startFromId = 0, autoContinue = true } = await req.json().catch(() => ({}));
+    const { batchSize = 5, startFromId = 0, autoContinue = true, regenerateAll = false } = await req.json().catch(() => ({}));
 
-    console.log(`Starting batch generation. Batch size: ${batchSize}, Starting from ID: ${startFromId}, Auto-continue: ${autoContinue}`);
+    console.log(`Starting batch generation. Batch size: ${batchSize}, Starting from ID: ${startFromId}, Auto-continue: ${autoContinue}, Regenerate all: ${regenerateAll}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get foods without images
-    const { data: foods, error: fetchError } = await supabase
+    // Get foods - either all foods or just those without images
+    let query = supabase
       .from("ref_foods")
       .select("id, name")
-      .is("image_url", null)
       .gt("id", startFromId)
       .order("id", { ascending: true })
       .limit(batchSize);
+
+    // Only filter by null image_url if not regenerating all
+    if (!regenerateAll) {
+      query = query.is("image_url", null);
+    }
+
+    const { data: foods, error: fetchError } = await query;
 
     if (fetchError) {
       throw new Error(`Failed to fetch foods: ${fetchError.message}`);
@@ -51,10 +57,17 @@ serve(async (req) => {
     }
 
     // Count total remaining before processing
-    const { count: totalRemaining } = await supabase
+    let countQuery = supabase
       .from("ref_foods")
-      .select("id", { count: "exact", head: true })
-      .is("image_url", null);
+      .select("id", { count: "exact", head: true });
+    
+    if (!regenerateAll) {
+      countQuery = countQuery.is("image_url", null);
+    } else {
+      countQuery = countQuery.gt("id", startFromId);
+    }
+    
+    const { count: totalRemaining } = await countQuery;
 
     console.log(`📊 Progress: ${totalRemaining} foods remaining. Processing batch of ${foods.length}...`);
 
@@ -83,15 +96,15 @@ serve(async (req) => {
           
           // If rate limited, stop processing and schedule continuation
           if (response.status === 429) {
-            console.log("⚠️ Rate limited, will continue after delay");
+            console.log("⚠️ Rate limited, waiting 60 seconds before continuing...");
             results.push({ 
               foodId: food.id, 
               foodName: food.name, 
               success: false, 
               error: "Rate limited" 
             });
-            // Wait longer before continuing
-            await delay(30000);
+            // Wait longer before continuing (60 seconds)
+            await delay(60000);
             continue;
           }
           
@@ -115,21 +128,28 @@ serve(async (req) => {
         });
       }
 
-      // Wait between requests to avoid rate limits (8 seconds)
+      // Wait between requests to avoid rate limits (12 seconds)
       if (foods.indexOf(food) < foods.length - 1) {
-        console.log("⏳ Waiting 8 seconds before next request...");
-        await delay(8000);
+        console.log("⏳ Waiting 12 seconds before next request...");
+        await delay(12000);
       }
     }
 
-    // Count remaining foods after this batch
-    const { count: remaining } = await supabase
-      .from("ref_foods")
-      .select("id", { count: "exact", head: true })
-      .is("image_url", null);
-
     const successCount = results.filter(r => r.success).length;
     const lastProcessedId = results.length > 0 ? results[results.length - 1].foodId : startFromId;
+
+    // Count remaining foods after this batch
+    let remainingQuery = supabase
+      .from("ref_foods")
+      .select("id", { count: "exact", head: true });
+    
+    if (!regenerateAll) {
+      remainingQuery = remainingQuery.is("image_url", null);
+    } else {
+      remainingQuery = remainingQuery.gt("id", lastProcessedId);
+    }
+    
+    const { count: remaining } = await remainingQuery;
 
     console.log(`📊 Batch complete. Success: ${successCount}/${results.length}. Remaining: ${remaining}`);
 
@@ -148,6 +168,7 @@ serve(async (req) => {
           batchSize,
           startFromId: lastProcessedId,
           autoContinue: true,
+          regenerateAll,
         }),
       }).catch(err => console.error("Failed to trigger next batch:", err));
     }
