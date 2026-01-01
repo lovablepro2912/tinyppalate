@@ -95,7 +95,7 @@ export default function Auth() {
             <motion.img
               src={logo}
               alt="TinyPalate"
-              className="w-32 h-32 mx-auto mb-4"
+              className="w-40 h-auto mx-auto mb-4"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             />
