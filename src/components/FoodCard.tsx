@@ -55,7 +55,8 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
     >
       <div className={cn(
         sizeClasses[size],
-        "flex items-center justify-center rounded-xl bg-secondary/50 overflow-hidden",
+        "flex items-center justify-center rounded-xl overflow-hidden",
+        !hasImage && "bg-secondary/50",
         shouldBeGrayscale && "grayscale-food"
       )}>
         {hasImage ? (
