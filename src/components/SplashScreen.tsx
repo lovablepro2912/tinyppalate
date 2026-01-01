@@ -34,6 +34,14 @@ export function SplashScreen({ isVisible }: SplashScreenProps) {
                 ease: 'easeInOut'
               }}
             />
+            <motion.p
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: 'easeOut' }}
+              className="text-muted-foreground text-sm font-medium tracking-wide"
+            >
+              Track every tiny bite
+            </motion.p>
             <motion.div
               className="w-12 h-1 bg-primary/20 rounded-full overflow-hidden mt-4"
             >
