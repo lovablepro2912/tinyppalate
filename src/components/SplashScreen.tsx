@@ -24,7 +24,7 @@ export function SplashScreen({ isVisible }: SplashScreenProps) {
             <motion.img
               src={splashLogo}
               alt="TinyPalate"
-              className="w-40 h-40"
+              className="w-40 h-auto"
               animate={{ 
                 scale: [1, 1.05, 1],
               }}
