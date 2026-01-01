@@ -286,6 +286,8 @@ export type Database = {
         Row: {
           allergen_maintenance: boolean
           allergen_progress: boolean
+          allergen_reminder: boolean
+          allergen_reminder_time: string
           created_at: string
           daily_reminder: boolean
           daily_reminder_time: string
@@ -298,6 +300,8 @@ export type Database = {
         Insert: {
           allergen_maintenance?: boolean
           allergen_progress?: boolean
+          allergen_reminder?: boolean
+          allergen_reminder_time?: string
           created_at?: string
           daily_reminder?: boolean
           daily_reminder_time?: string
@@ -310,6 +314,8 @@ export type Database = {
         Update: {
           allergen_maintenance?: boolean
           allergen_progress?: boolean
+          allergen_reminder?: boolean
+          allergen_reminder_time?: string
           created_at?: string
           daily_reminder?: boolean
           daily_reminder_time?: string

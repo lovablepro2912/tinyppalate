@@ -158,7 +158,50 @@ serve(async (req) => {
         }
       }
 
-      // 3. Daily Reminder - at user's preferred time
+      // 3. Allergen Reminder - daily reminder to introduce allergens
+      if (prefs?.allergen_reminder !== false) {
+        const reminderTime = prefs?.allergen_reminder_time || '10:00:00';
+        const reminderHour = parseInt(reminderTime.split(':')[0], 10);
+
+        if (currentHour === reminderHour && !sentTypes.has('allergen_reminder:')) {
+          // Check if user has allergens in TO_TRY or TRYING status
+          const { data: pendingAllergens } = await supabase
+            .from('user_food_states')
+            .select('id, ref_foods!inner(is_allergen)')
+            .eq('user_id', userId)
+            .in('status', ['TO_TRY', 'TRYING'])
+            .eq('ref_foods.is_allergen', true)
+            .limit(1);
+
+          // Also check if there are allergens not yet started
+          const { data: allAllergens } = await supabase
+            .from('ref_foods')
+            .select('id')
+            .eq('is_allergen', true);
+
+          const { data: userStates } = await supabase
+            .from('user_food_states')
+            .select('food_id')
+            .eq('user_id', userId);
+
+          const startedFoodIds = new Set(userStates?.map(s => s.food_id) || []);
+          const unstartedAllergens = allAllergens?.filter(a => !startedFoodIds.has(a.id)) || [];
+
+          if ((pendingAllergens && pendingAllergens.length > 0) || unstartedAllergens.length > 0) {
+            await sendNotification(
+              supabaseUrl,
+              supabaseServiceKey,
+              userId,
+              `Allergen time for ${babyName}! 🥜`,
+              `Remember to introduce or continue an allergen today. Early introduction helps build tolerance.`,
+              'allergen_reminder'
+            );
+            notificationsSent++;
+          }
+        }
+      }
+
+      // 4. Daily Reminder - at user's preferred time
       if (prefs?.daily_reminder !== false) {
         const reminderTime = prefs?.daily_reminder_time || '18:00:00';
         const reminderHour = parseInt(reminderTime.split(':')[0], 10);
@@ -186,7 +229,7 @@ serve(async (req) => {
         }
       }
 
-      // 4. Reaction Follow-up - day after a reaction
+      // 5. Reaction Follow-up - day after a reaction
       if (prefs?.reaction_followup !== false) {
         const { data: yesterdayReactions } = await supabase
           .from('food_logs')

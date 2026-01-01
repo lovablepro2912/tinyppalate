@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 interface NotificationPreferences {
   allergen_maintenance: boolean;
   allergen_progress: boolean;
+  allergen_reminder: boolean;
+  allergen_reminder_time: string;
   daily_reminder: boolean;
   daily_reminder_time: string;
   milestones: boolean;
@@ -20,17 +22,25 @@ interface NotificationPreferences {
 const defaultPrefs: NotificationPreferences = {
   allergen_maintenance: true,
   allergen_progress: true,
+  allergen_reminder: true,
+  allergen_reminder_time: '10:00:00',
   daily_reminder: true,
   daily_reminder_time: '18:00:00',
   milestones: true,
   reaction_followup: true
 };
 
-const timeOptions = [
+const morningTimeOptions = [
+  { value: '06:00:00', label: '6:00 AM' },
   { value: '07:00:00', label: '7:00 AM' },
   { value: '08:00:00', label: '8:00 AM' },
   { value: '09:00:00', label: '9:00 AM' },
+  { value: '10:00:00', label: '10:00 AM' },
+  { value: '11:00:00', label: '11:00 AM' },
   { value: '12:00:00', label: '12:00 PM' },
+];
+
+const eveningTimeOptions = [
   { value: '17:00:00', label: '5:00 PM' },
   { value: '18:00:00', label: '6:00 PM' },
   { value: '19:00:00', label: '7:00 PM' },
@@ -57,6 +67,8 @@ export function NotificationSettings() {
         setPrefs({
           allergen_maintenance: data.allergen_maintenance,
           allergen_progress: data.allergen_progress,
+          allergen_reminder: data.allergen_reminder,
+          allergen_reminder_time: data.allergen_reminder_time,
           daily_reminder: data.daily_reminder,
           daily_reminder_time: data.daily_reminder_time,
           milestones: data.milestones,
@@ -157,6 +169,46 @@ export function NotificationSettings() {
           </div>
         ))}
 
+        {/* Allergen Reminder with time picker */}
+        <div className="px-4 py-3.5 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 mr-4">
+              <Label htmlFor="allergen_reminder" className="font-medium text-foreground cursor-pointer">
+                Allergen Reminder
+              </Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Daily reminder to introduce allergens
+              </p>
+            </div>
+            <Switch
+              id="allergen_reminder"
+              checked={prefs.allergen_reminder}
+              onCheckedChange={(checked) => updatePref('allergen_reminder', checked)}
+            />
+          </div>
+          
+          {prefs.allergen_reminder && (
+            <div className="flex items-center gap-2 pl-1">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <Select
+                value={prefs.allergen_reminder_time}
+                onValueChange={(value) => updatePref('allergen_reminder_time', value)}
+              >
+                <SelectTrigger className="w-32 h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {morningTimeOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
         {/* Daily Reminder with time picker */}
         <div className="px-4 py-3.5 space-y-3">
           <div className="flex items-center justify-between">
@@ -186,7 +238,7 @@ export function NotificationSettings() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {timeOptions.map(opt => (
+                  {eveningTimeOptions.map(opt => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </SelectItem>
