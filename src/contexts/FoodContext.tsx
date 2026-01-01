@@ -535,14 +535,76 @@ export function FoodProvider({ children }: { children: ReactNode }) {
     const originalIndex = logs.findIndex(l => l.id === logId);
     if (!originalLog) return;
 
-    // OPTIMISTIC UPDATE: Remove immediately
+    // Get the user_food_state for this log to determine if we need to update it
+    const foodState = userFoodStates.find(s => s.id === originalLog.user_food_state_id);
+    const originalFoodState = foodState ? { ...foodState } : null;
+    
+    // Count logs for this food state (excluding the one being deleted)
+    const logsForThisState = logs.filter(l => l.user_food_state_id === originalLog.user_food_state_id);
+    const remainingLogsForState = logsForThisState.length - 1;
+
+    // OPTIMISTIC UPDATE: Remove log immediately
     setLogs(prev => prev.filter(l => l.id !== logId));
+    
+    // If this was the last log for this food state, remove the state too
+    if (remainingLogsForState === 0 && foodState) {
+      setUserFoodStates(prev => prev.filter(s => s.id !== foodState.id));
+    } else if (foodState && remainingLogsForState > 0) {
+      // Update exposure count to match remaining logs
+      setUserFoodStates(prev => prev.map(s => {
+        if (s.id !== foodState.id) return s;
+        const newExposureCount = remainingLogsForState;
+        const food = foods.find(f => f.id === s.food_id);
+        
+        // Recalculate status based on remaining exposure count
+        let newStatus = s.status;
+        if (food?.is_allergen) {
+          if (newExposureCount >= 3) {
+            newStatus = 'SAFE';
+          } else if (newExposureCount > 0) {
+            newStatus = 'TRYING';
+          } else {
+            newStatus = 'TO_TRY';
+          }
+        }
+        
+        return { ...s, exposure_count: newExposureCount, status: newStatus };
+      }));
+    }
 
     try {
+      // Delete the log from database
       await supabase
         .from('food_logs')
         .delete()
         .eq('id', logId);
+      
+      // If this was the last log for this food state, delete the state from database too
+      if (remainingLogsForState === 0 && foodState) {
+        await supabase
+          .from('user_food_states')
+          .delete()
+          .eq('id', foodState.id);
+      } else if (foodState && remainingLogsForState > 0) {
+        // Update the food state in database
+        const food = foods.find(f => f.id === foodState.food_id);
+        let newStatus = foodState.status;
+        if (food?.is_allergen) {
+          if (remainingLogsForState >= 3) {
+            newStatus = 'SAFE';
+          } else if (remainingLogsForState > 0) {
+            newStatus = 'TRYING';
+          }
+        }
+        
+        await supabase
+          .from('user_food_states')
+          .update({
+            exposure_count: remainingLogsForState,
+            status: newStatus,
+          })
+          .eq('id', foodState.id);
+      }
       
       toast.success('Entry deleted', { duration: 2000 });
     } catch (error) {
@@ -552,11 +614,19 @@ export function FoodProvider({ children }: { children: ReactNode }) {
         newLogs.splice(originalIndex, 0, originalLog);
         return newLogs;
       });
+      
+      // Rollback food state changes
+      if (remainingLogsForState === 0 && originalFoodState) {
+        setUserFoodStates(prev => [...prev, originalFoodState]);
+      } else if (originalFoodState) {
+        setUserFoodStates(prev => prev.map(s => s.id === originalFoodState.id ? originalFoodState : s));
+      }
+      
       if (import.meta.env.DEV) console.error('Error deleting log:', error);
       toast.error('Failed to delete log. Please try again.');
       throw error;
     }
-  }, [logs]);
+  }, [logs, userFoodStates, foods]);
 
   const updateProfile = useCallback(async (updates: ProfileUpdate) => {
     if (!user) return;
