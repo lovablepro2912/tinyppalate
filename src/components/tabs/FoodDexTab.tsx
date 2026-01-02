@@ -106,7 +106,7 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
     <div className="px-4">
       {/* Header */}
       <motion.div 
-        className="pt-0 mb-4"
+        className="pt-2 mb-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >

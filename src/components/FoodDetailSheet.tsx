@@ -178,7 +178,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-auto px-4 pb-28">
+            <div className="flex-1 overflow-auto px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
@@ -238,7 +238,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
             </div>
 
             {/* Sticky Action Bar */}
-            <div className="p-4 pb-8 bg-background border-t border-border">
+            <div className="sticky bottom-0 p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-background border-t">
               <Button
                 onClick={handleLogFood}
                 size="lg"
