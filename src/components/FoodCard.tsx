@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FoodWithState } from '@/types/food';
 import { CheckCircle, AlertTriangle, Clock, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ interface FoodCardProps {
 
 export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceColor = false, locked = false }: FoodCardProps) {
   const [imageError, setImageError] = useState(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const isUnlocked = food.state && (food.state.status === 'SAFE' || food.state.status === 'TRYING');
   const hasReaction = food.state?.status === 'REACTION';
 
@@ -41,14 +42,31 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
   // Use image if available and not errored
   const hasImage = food.image_url && !imageError;
 
-  const handleTouch = (e: React.TouchEvent) => {
-    e.preventDefault();
-    onClick?.();
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+    
+    // Only trigger click if movement was minimal (tap, not scroll)
+    if (deltaX < 10 && deltaY < 10) {
+      e.preventDefault();
+      onClick?.();
+    }
+    
+    touchStartRef.current = null;
   };
 
   return (
     <button
-      onTouchEnd={handleTouch}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       onClick={onClick}
       className={cn(
         "relative flex flex-col items-center gap-1 p-2 rounded-2xl",
