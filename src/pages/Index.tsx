@@ -42,7 +42,7 @@ function AppContent() {
       {/* Scrollable content area with safe area */}
       <main 
         ref={mainRef}
-        className="flex-1 overflow-y-auto overscroll-none max-w-lg mx-auto w-full safe-area-x safe-area-top pb-24"
+        className="flex-1 overflow-y-auto overscroll-none max-w-lg mx-auto w-full safe-area-x safe-area-top pb-16 safe-area-bottom"
       >
         {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
