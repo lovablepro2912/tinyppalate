@@ -93,7 +93,7 @@ export function JournalTab() {
   return (
     <div className="min-h-full">
       {/* Header */}
-      <div className="px-4 pt-0 mb-4 flex items-start justify-between">
+      <div className="px-4 pt-2 mb-4 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Food Journal</h1>
           <p className="text-muted-foreground text-sm">
