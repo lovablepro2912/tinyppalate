@@ -1,4 +1,5 @@
 import { Home, Grid3X3, ScrollText, AlertTriangle, User } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useHaptics } from '@/hooks/useHaptics';
@@ -26,7 +27,9 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     onTabChange(tabId);
   };
   
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
       <div className="flex justify-around items-center h-14 max-w-lg mx-auto px-2 safe-area-x">
         {tabs.map(tab => {
@@ -62,6 +65,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           );
         })}
       </div>
-    </nav>
+    </nav>,
+    document.body
   );
 }
