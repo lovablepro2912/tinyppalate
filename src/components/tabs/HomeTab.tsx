@@ -54,9 +54,9 @@ export function HomeTab({ onSelectFood }: HomeTabProps) {
   };
 
   return (
-    <div className="pb-24 px-4 space-y-6">
+    <div className="px-4 space-y-6">
       {/* Header */}
-      <motion.div className="pt-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <motion.div className="pt-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold text-foreground">Hi, {profile?.baby_name || "Baby"}!</h1>
         <p className="text-muted-foreground">Let's explore new tastes today</p>
       </motion.div>
