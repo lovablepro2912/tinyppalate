@@ -39,6 +39,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
   const { packages, purchasePackage, restorePurchases, isLoading } = useSubscription();
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const { toast } = useToast();
   const { medium, success } = useHaptics();
   const { celebrate } = useCelebration();
@@ -47,8 +48,14 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
     pkg.packageType === 'MONTHLY' || pkg.identifier === '$rc_monthly'
   );
 
+  const yearlyPackage = packages.find(pkg => 
+    pkg.packageType === 'ANNUAL' || pkg.identifier === '$rc_annual'
+  );
+
+  const selectedPackage = selectedPlan === 'yearly' ? yearlyPackage : monthlyPackage;
+
   const handlePurchase = async () => {
-    if (!monthlyPackage) {
+    if (!selectedPackage) {
       toast({
         title: 'Subscription unavailable',
         description: 'Please try again later',
@@ -61,7 +68,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
     setIsPurchasing(true);
     
     try {
-      const purchased = await purchasePackage(monthlyPackage);
+      const purchased = await purchasePackage(selectedPackage);
       if (purchased) {
         success();
         celebrate('premium');
@@ -112,7 +119,8 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
     }
   };
 
-  const price = monthlyPackage?.product.priceString || '$4.99';
+  const monthlyPrice = monthlyPackage?.product.priceString || '$4.99';
+  const yearlyPrice = yearlyPackage?.product.priceString || '$50';
 
   if (!isOpen) return null;
 
@@ -205,21 +213,55 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
 
           {/* Pricing Section */}
           <div className="px-6 pb-6">
-            {/* Price Display with Badge */}
+            {/* Plan Toggle */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45 }}
-              className="text-center mb-4"
+              className="grid grid-cols-2 gap-3 mb-4"
             >
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span className="text-xs font-medium text-primary">Best Value</span>
-              </div>
-              <div className="flex items-baseline justify-center gap-1">
-                <span className="text-3xl font-bold text-foreground">{price}</span>
-                <span className="text-muted-foreground">/month</span>
-              </div>
+              {/* Monthly Option */}
+              <button
+                onClick={() => setSelectedPlan('monthly')}
+                className={`relative p-4 rounded-2xl border-2 transition-all ${
+                  selectedPlan === 'monthly'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border bg-card hover:border-muted-foreground/50'
+                }`}
+              >
+                <div className="text-sm font-medium text-muted-foreground mb-1">Monthly</div>
+                <div className="text-xl font-bold text-foreground">{monthlyPrice}</div>
+                <div className="text-xs text-muted-foreground">/month</div>
+              </button>
+
+              {/* Yearly Option */}
+              <button
+                onClick={() => setSelectedPlan('yearly')}
+                className={`relative p-4 rounded-2xl border-2 transition-all ${
+                  selectedPlan === 'yearly'
+                    ? 'border-transparent bg-gradient-to-br from-amber-500/10 to-rose-500/10'
+                    : 'border-border bg-card hover:border-muted-foreground/50'
+                }`}
+                style={selectedPlan === 'yearly' ? {
+                  background: 'linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(to bottom right, hsl(var(--chart-1)), hsl(var(--chart-3))) border-box',
+                  borderColor: 'transparent'
+                } : undefined}
+              >
+                {/* Best Value Badge */}
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-white text-[10px] font-bold shadow-sm">
+                    <Sparkles className="w-2.5 h-2.5" />
+                    Best Value
+                  </div>
+                </div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">Yearly</div>
+                <div className="text-xl font-bold text-foreground">{yearlyPrice}</div>
+                <div className="text-xs text-muted-foreground">~$4.17/mo</div>
+                {/* Save 20% Badge */}
+                <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-rose-500/20 text-xs font-semibold text-primary">
+                  Save 20%
+                </div>
+              </button>
             </motion.div>
 
             {/* Subscribe Button */}
@@ -239,7 +281,9 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
                 ) : (
                   <>
                     <Star className="w-5 h-5 fill-current relative z-10" />
-                    <span className="relative z-10">Upgrade to Premium</span>
+                    <span className="relative z-10">
+                      Start Premium — {selectedPlan === 'yearly' ? `${yearlyPrice}/year` : `${monthlyPrice}/mo`}
+                    </span>
                   </>
                 )}
               </Button>
