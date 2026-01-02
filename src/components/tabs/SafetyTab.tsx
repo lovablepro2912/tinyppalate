@@ -203,20 +203,22 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
           Safely introduce the Top 9 allergens with our guided protocol
         </p>
         <motion.button
-          onClick={() => setShowInfoSheet(true)}
+          onClick={() => isLocked ? setShowPaywall(true) : setShowInfoSheet(true)}
           className="w-full mt-4 bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]"
           whileTap={{ scale: 0.98 }}
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-              <Info className="w-5 h-5 text-primary-foreground" />
+              {isLocked ? <Lock className="w-5 h-5 text-primary-foreground" /> : <Info className="w-5 h-5 text-primary-foreground" />}
             </div>
             <div className="text-left">
               <p className="font-semibold text-primary-foreground">Learn about the protocol</p>
-              <p className="text-xs text-primary-foreground/80">Safety tips and how it works</p>
+              <p className="text-xs text-primary-foreground/80">
+                {isLocked ? 'Unlock with Premium' : 'Safety tips and how it works'}
+              </p>
             </div>
           </div>
-          <ChevronRight className="w-5 h-5 text-primary-foreground/80" />
+          {isLocked ? <Crown className="w-5 h-5 text-primary-foreground/80" /> : <ChevronRight className="w-5 h-5 text-primary-foreground/80" />}
         </motion.button>
       </motion.div>
 
