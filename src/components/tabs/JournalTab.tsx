@@ -91,9 +91,9 @@ export function JournalTab() {
   );
 
   return (
-    <div className="min-h-full">
+    <div className="pb-24 pt-4">
       {/* Header */}
-      <div className="px-4 pt-2 mb-4 flex items-start justify-between">
+      <div className="px-4 mb-4 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Food Journal</h1>
           <p className="text-muted-foreground text-sm">
@@ -137,20 +137,18 @@ export function JournalTab() {
       {/* Timeline */}
       <div className="px-4">
         {sortedDates.length === 0 ? (
-          <div className="flex items-center justify-center min-h-[50vh] text-center text-muted-foreground">
-            <div>
-              {searchQuery ? (
-                <>
-                  <p className="text-lg">No results for "{searchQuery}"</p>
-                  <p className="text-sm mt-1">Try a different search term</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-lg">No entries yet</p>
-                  <p className="text-sm mt-1">Start logging foods to see your journal</p>
-                </>
-              )}
-            </div>
+          <div className="text-center py-12 text-muted-foreground">
+            {searchQuery ? (
+              <>
+                <p className="text-lg">No results for "{searchQuery}"</p>
+                <p className="text-sm mt-1">Try a different search term</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg">No entries yet</p>
+                <p className="text-sm mt-1">Start logging foods to see your journal</p>
+              </>
+            )}
           </div>
         ) : (
           <div>

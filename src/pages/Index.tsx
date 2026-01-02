@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { FoodProvider } from '@/contexts/FoodContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
@@ -13,17 +13,17 @@ import { ProfileTab } from '@/components/tabs/ProfileTab';
 import { FoodWithState } from '@/types/food';
 
 function AppContent() {
+  // Initialize push notifications for native platforms
   usePushNotifications();
   
   const [activeTab, setActiveTab] = useState('home');
   const [showPicker, setShowPicker] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodWithState | null>(null);
   const [showSafetyWarning, setShowSafetyWarning] = useState(false);
-  const mainRef = useRef<HTMLDivElement>(null);
 
-  // Scroll content to top when switching tabs - scroll the ref, not window
+  // Scroll to top when changing tabs
   useEffect(() => {
-    mainRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo(0, 0);
   }, [activeTab]);
 
   const handleSelectFood = (food: FoodWithState, showSafety: boolean = false) => {
@@ -38,12 +38,9 @@ function AppContent() {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden bg-background">
-      {/* Scrollable content area */}
-      <main 
-        ref={mainRef}
-        className="flex-1 overflow-y-auto scroll-smooth-ios overscroll-none max-w-lg mx-auto w-full safe-area-x safe-area-top pt-2 pb-[calc(3.5rem+env(safe-area-inset-bottom))]"
-      >
+    <div className="min-h-screen bg-background safe-area-top scroll-smooth-ios">
+      {/* Main Content */}
+      <main className="max-w-lg mx-auto safe-area-x">
         {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'journal' && <JournalTab />}
@@ -51,15 +48,17 @@ function AppContent() {
         {activeTab === 'profile' && <ProfileTab />}
       </main>
 
-      {/* Nav is a flex child - never moves */}
+      {/* Bottom Nav */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Modals */}
+      {/* Food Picker Modal */}
       <FoodPickerModal
         isOpen={showPicker}
         onClose={() => setShowPicker(false)}
         onSelectFood={(food) => handleSelectFood(food, food.is_allergen && (!food.state || food.state.status === 'TO_TRY'))}
       />
+
+      {/* Log Food Modal */}
       <LogFoodModal
         food={selectedFood}
         onClose={handleCloseLogModal}

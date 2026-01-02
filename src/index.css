@@ -112,25 +112,9 @@
     @apply border-border;
   }
 
-  html {
-    height: 100dvh;
-    overscroll-behavior-y: none;
-  }
-
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Nunito', sans-serif;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  #root {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
   }
 }
 
@@ -237,6 +221,7 @@
   /* iOS momentum scrolling */
   .scroll-smooth-ios {
     -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 }
 
