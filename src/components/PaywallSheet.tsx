@@ -223,10 +223,10 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
               {/* Monthly Option */}
               <button
                 onClick={() => setSelectedPlan('monthly')}
-                className={`relative p-4 rounded-2xl border-2 transition-all ${
+                className={`relative p-4 rounded-2xl border-2 transition-all active:scale-[0.98] ${
                   selectedPlan === 'monthly'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border bg-card hover:border-muted-foreground/50'
+                    ? 'border-orange-500 bg-orange-500/10 ring-1 ring-orange-500/50'
+                    : 'border-border bg-card hover:border-orange-400/50 hover:bg-orange-500/5'
                 }`}
               >
                 <div className="text-sm font-medium text-muted-foreground mb-1">Monthly</div>
@@ -237,15 +237,11 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
               {/* Yearly Option */}
               <button
                 onClick={() => setSelectedPlan('yearly')}
-                className={`relative p-4 rounded-2xl border-2 transition-all ${
+                className={`relative p-4 rounded-2xl border-2 transition-all active:scale-[0.98] ${
                   selectedPlan === 'yearly'
-                    ? 'border-transparent bg-gradient-to-br from-amber-500/10 to-rose-500/10'
-                    : 'border-border bg-card hover:border-muted-foreground/50'
+                    ? 'border-orange-500 bg-orange-500/10 ring-1 ring-orange-500/50'
+                    : 'border-border bg-card hover:border-orange-400/50 hover:bg-orange-500/5'
                 }`}
-                style={selectedPlan === 'yearly' ? {
-                  background: 'linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(to bottom right, hsl(var(--chart-1)), hsl(var(--chart-3))) border-box',
-                  borderColor: 'transparent'
-                } : undefined}
               >
                 {/* Best Value Badge */}
                 <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
@@ -257,9 +253,9 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
                 <div className="text-sm font-medium text-muted-foreground mb-1">Yearly</div>
                 <div className="text-xl font-bold text-foreground">{yearlyPrice}</div>
                 <div className="text-xs text-muted-foreground">~$4.17/mo</div>
-                {/* Save 20% Badge */}
+                {/* Save 17% Badge */}
                 <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-rose-500/20 text-xs font-semibold text-primary">
-                  Save 20%
+                  Save 17%
                 </div>
               </button>
             </motion.div>
