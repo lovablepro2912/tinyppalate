@@ -102,7 +102,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50"
+            className="fixed inset-0 bg-black/60 z-[55]"
             onClick={handleClose}
           />
 
@@ -112,7 +112,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[92vh] overflow-hidden rounded-t-3xl bg-background flex flex-col"
+            className="fixed inset-x-0 bottom-0 z-[60] max-h-[92vh] overflow-hidden rounded-t-3xl bg-background flex flex-col"
           >
             {/* Header with Food Info */}
             <div className="relative bg-gradient-to-b from-primary/5 to-background px-5 pt-3 pb-4">
@@ -238,7 +238,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
             </div>
 
             {/* Sticky Action Bar */}
-            <div className="p-4 bg-background border-t border-border safe-area-bottom">
+            <div className="p-4 pb-8 bg-background border-t border-border">
               <Button
                 onClick={handleLogFood}
                 size="lg"
