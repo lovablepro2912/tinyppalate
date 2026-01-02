@@ -112,17 +112,24 @@
     @apply border-border;
   }
 
-  html, body {
+  html {
+    height: 100%;
+  }
+
+  body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Nunito', sans-serif;
-    overscroll-behavior: none;
-    overflow: hidden;
     height: 100%;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
   }
   
   #root {
     height: 100%;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 }
 
