@@ -71,10 +71,10 @@ export function ProfileTab() {
   ];
 
   return (
-    <div className="pb-24 px-4">
+    <div className="px-4">
       {/* Header */}
       <motion.div 
-        className="pt-6 mb-6"
+        className="pt-2 mb-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
