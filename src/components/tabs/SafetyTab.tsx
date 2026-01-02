@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { AllergenCard } from '@/components/AllergenCard';
+import { PaywallSheet } from '@/components/PaywallSheet';
 import { FoodWithState } from '@/types/food';
-import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Search, X, Info, Baby, Heart, Phone } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Search, X, Info, Baby, Heart, Phone, Lock, Crown } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,8 +32,10 @@ interface AllergenGroup {
 
 export function SafetyTab({ onSelectFood }: SafetyTabProps) {
   const { getAllergenFoods } = useFoodContext();
+  const { isPremium, isLoading: subscriptionLoading } = useSubscription();
   const [searchQuery, setSearchQuery] = useState('');
   const [showInfoSheet, setShowInfoSheet] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const { countryCode } = useUserLocation();
   const emergencyInfo = getPoisonControlInfo(countryCode || 'US');
   
@@ -174,6 +178,9 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
     }
   };
 
+  // Check if content should be locked
+  const isLocked = !isPremium && !subscriptionLoading;
+
   return (
     <div className="pb-24 px-4">
       {/* Header */}
@@ -185,6 +192,12 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
         <div className="flex items-center gap-2 mb-2">
           <ShieldCheck className="w-6 h-6 text-primary" />
           <h1 className="text-2xl font-bold text-foreground">Allergen Protocol</h1>
+          {isLocked && (
+            <div className="ml-auto flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium">
+              <Crown className="w-3 h-3" />
+              Premium
+            </div>
+          )}
         </div>
         <p className="text-muted-foreground mb-2">
           Safely introduce the Top 9 allergens with our guided protocol
@@ -511,6 +524,54 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Locked Overlay for non-premium users */}
+      {isLocked && (
+        <>
+          {/* Blur overlay on content */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 top-[200px] z-10 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to bottom, transparent, hsl(var(--background)) 40%)',
+            }}
+          />
+          
+          {/* Unlock CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="fixed bottom-28 left-4 right-4 z-20"
+          >
+            <div className="max-w-lg mx-auto bg-card rounded-2xl card-shadow p-5 border border-border">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Lock className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground">Unlock Allergen Protocol</h3>
+                  <p className="text-sm text-muted-foreground">Get full access for $4.99/month</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setShowPaywall(true)}
+                className="w-full h-12 rounded-xl font-bold gap-2"
+              >
+                <Crown className="w-4 h-4" />
+                Upgrade to Premium
+              </Button>
+            </div>
+          </motion.div>
+        </>
+      )}
+
+      {/* Paywall Sheet */}
+      <PaywallSheet 
+        isOpen={showPaywall} 
+        onClose={() => setShowPaywall(false)} 
+      />
     </div>
   );
 }

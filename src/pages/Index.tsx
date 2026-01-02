@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { FoodProvider } from '@/contexts/FoodContext';
+import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { BottomNav } from '@/components/BottomNav';
 import { FoodPickerModal } from '@/components/FoodPickerModal';
 import { LogFoodModal } from '@/components/LogFoodModal';
@@ -70,7 +71,9 @@ function AppContent() {
 const Index = () => {
   return (
     <FoodProvider>
-      <AppContent />
+      <SubscriptionProvider>
+        <AppContent />
+      </SubscriptionProvider>
     </FoodProvider>
   );
 };
