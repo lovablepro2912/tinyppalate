@@ -59,7 +59,8 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
         sizeClasses[size],
         "flex items-center justify-center rounded-xl overflow-hidden",
         !hasImage && "bg-secondary/50",
-        shouldBeGrayscale && "grayscale-food"
+        shouldBeGrayscale && "grayscale-food",
+        locked && "blur-sm"
       )}>
         {hasImage ? (
           <img 
@@ -73,7 +74,10 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
         )}
       </div>
       
-      <span className="text-xs font-medium text-foreground text-center line-clamp-1 max-w-full px-1">
+      <span className={cn(
+        "text-xs font-medium text-foreground text-center line-clamp-1 max-w-full px-1",
+        locked && "blur-sm"
+      )}>
         {food.name}
       </span>
 
