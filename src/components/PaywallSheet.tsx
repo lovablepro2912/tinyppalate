@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crown, ShieldCheck, FileText, Bell, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { X, Star, HeartPulse, CalendarClock, ScrollText, Infinity, Sparkles, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useToast } from '@/hooks/use-toast';
 import { useHaptics } from '@/hooks/useHaptics';
+import { useState } from 'react';
 
 interface PaywallSheetProps {
   isOpen: boolean;
@@ -13,25 +13,29 @@ interface PaywallSheetProps {
 
 const FEATURES = [
   {
-    icon: ShieldCheck,
+    icon: HeartPulse,
     title: 'Allergen Protocol',
-    description: 'Track all 9 major allergens with our guided introduction protocol',
+    description: 'Track all 9 major allergens safely',
   },
   {
-    icon: Bell,
+    icon: CalendarClock,
     title: 'Smart Reminders',
-    description: 'Get reminded to maintain allergen exposures 2-3x per week',
+    description: 'Stay on schedule with weekly nudges',
   },
   {
-    icon: FileText,
+    icon: ScrollText,
     title: 'Doctor Reports',
-    description: 'Generate professional PDF reports for pediatrician visits',
+    description: 'Professional PDFs for pediatrician visits',
+  },
+  {
+    icon: Infinity,
+    title: 'Unlimited Tracking',
+    description: 'Log every food with no restrictions',
   },
 ];
 
 export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
   const { packages, purchasePackage, restorePurchases, isLoading } = useSubscription();
-  const [currentFeature, setCurrentFeature] = useState(0);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const { toast } = useToast();
@@ -59,7 +63,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
       if (purchased) {
         success();
         toast({
-          title: 'Welcome to Premium! 🎉',
+          title: 'Welcome to Premium!',
           description: 'You now have full access to the Allergen Protocol',
         });
         onClose();
@@ -84,7 +88,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
       if (restored) {
         success();
         toast({
-          title: 'Purchases restored! 🎉',
+          title: 'Purchases restored!',
           description: 'Your premium access has been restored',
         });
         onClose();
@@ -103,14 +107,6 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
     } finally {
       setIsRestoring(false);
     }
-  };
-
-  const nextFeature = () => {
-    setCurrentFeature((prev) => (prev + 1) % FEATURES.length);
-  };
-
-  const prevFeature = () => {
-    setCurrentFeature((prev) => (prev - 1 + FEATURES.length) % FEATURES.length);
   };
 
   const price = monthlyPackage?.product.priceString || '$4.99';
@@ -137,22 +133,28 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-secondary flex items-center justify-center"
+            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center"
           >
-            <X className="w-4 h-4 text-muted-foreground" />
+            <X className="w-4 h-4 text-primary-foreground" />
           </button>
 
-          {/* Header with Gradient */}
-          <div className="bg-gradient-to-br from-primary via-primary to-primary/80 px-6 pt-8 pb-6 text-center">
-            {/* Premium Badge */}
+          {/* Header with Premium Gradient */}
+          <div className="relative bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 px-6 pt-10 pb-8 text-center overflow-hidden">
+            {/* Decorative circles */}
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            
+            {/* Premium Badge with Star */}
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-1.5 bg-primary-foreground/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', delay: 0.1, damping: 12 }}
+              className="relative inline-flex items-center justify-center w-16 h-16 mb-4"
             >
-              <Crown className="w-4 h-4 text-primary-foreground" />
-              <span className="text-sm font-bold text-primary-foreground">PREMIUM MEMBERSHIP</span>
+              <div className="absolute inset-0 bg-white/20 rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="relative w-16 h-16 bg-white/25 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <Star className="w-8 h-8 text-white fill-white" />
+              </div>
             </motion.div>
 
             {/* Title */}
@@ -160,98 +162,84 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.15 }}
-              className="text-2xl font-bold text-primary-foreground mb-2"
+              className="text-2xl font-bold text-white mb-2"
             >
-              Unlock the Allergen Protocol
+              Unlock Everything
             </motion.h2>
             <motion.p
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-primary-foreground/80 text-sm"
+              className="text-white/80 text-sm"
             >
-              Safely introduce the Top 9 allergens with our guided protocol
+              Get full access to all premium features
             </motion.p>
           </div>
 
-          {/* Feature Carousel */}
-          <div className="px-6 py-6">
-            <div className="relative">
-              <motion.div
-                key={currentFeature}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="bg-secondary/50 rounded-2xl p-5 text-center min-h-[140px] flex flex-col items-center justify-center"
-              >
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                  {(() => {
-                    const Icon = FEATURES[currentFeature].icon;
-                    return <Icon className="w-7 h-7 text-primary" />;
-                  })()}
-                </div>
-                <h3 className="font-bold text-foreground mb-1">
-                  {FEATURES[currentFeature].title}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {FEATURES[currentFeature].description}
-                </p>
-              </motion.div>
-
-              {/* Navigation Arrows */}
-              <button
-                onClick={prevFeature}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-8 h-8 rounded-full bg-card card-shadow flex items-center justify-center"
-              >
-                <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-              </button>
-              <button
-                onClick={nextFeature}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-8 h-8 rounded-full bg-card card-shadow flex items-center justify-center"
-              >
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </button>
-            </div>
-
-            {/* Dots Indicator */}
-            <div className="flex justify-center gap-1.5 mt-4">
-              {FEATURES.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentFeature(idx)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    idx === currentFeature ? 'bg-primary' : 'bg-border'
-                  }`}
-                />
+          {/* Features List */}
+          <div className="px-6 py-5">
+            <div className="space-y-3">
+              {FEATURES.map((feature, idx) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25 + idx * 0.05 }}
+                  className="flex items-center gap-4 p-3 rounded-xl bg-secondary/50"
+                >
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-amber-500/20 to-rose-500/20 flex items-center justify-center">
+                    <feature.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-foreground text-sm">{feature.title}</h4>
+                    <p className="text-xs text-muted-foreground">{feature.description}</p>
+                  </div>
+                  <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                </motion.div>
               ))}
             </div>
           </div>
 
           {/* Pricing Section */}
           <div className="px-6 pb-6">
-            {/* Price Display */}
-            <div className="text-center mb-4">
+            {/* Price Display with Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+              className="text-center mb-4"
+            >
+              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-medium text-primary">Best Value</span>
+              </div>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-3xl font-bold text-foreground">{price}</span>
                 <span className="text-muted-foreground">/month</span>
               </div>
-            </div>
+            </motion.div>
 
             {/* Subscribe Button */}
-            <Button
-              onClick={handlePurchase}
-              disabled={isPurchasing || isLoading}
-              className="w-full h-14 rounded-2xl text-lg font-bold bg-primary hover:bg-primary/90 gap-2"
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
             >
-              {isPurchasing ? (
-                <span className="animate-pulse">Processing...</span>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5" />
-                  Upgrade to Premium
-                </>
-              )}
-            </Button>
+              <Button
+                onClick={handlePurchase}
+                disabled={isPurchasing || isLoading}
+                className="w-full h-14 rounded-2xl text-lg font-bold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:opacity-90 transition-opacity border-0 gap-2"
+              >
+                {isPurchasing ? (
+                  <span className="animate-pulse">Processing...</span>
+                ) : (
+                  <>
+                    <Star className="w-5 h-5 fill-current" />
+                    Upgrade to Premium
+                  </>
+                )}
+              </Button>
+            </motion.div>
 
             {/* Restore Purchases */}
             <button
@@ -263,7 +251,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
             </button>
 
             {/* Disclaimer */}
-            <p className="text-xs text-muted-foreground text-center mt-4">
+            <p className="text-xs text-muted-foreground text-center mt-4 safe-area-bottom">
               Recurring billing. Cancel anytime in Settings.
             </p>
           </div>
