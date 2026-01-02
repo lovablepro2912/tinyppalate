@@ -178,7 +178,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-auto px-4 pb-4">
+            <div className="flex-1 overflow-auto px-4 pb-28">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
