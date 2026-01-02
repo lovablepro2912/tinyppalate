@@ -91,7 +91,7 @@ export function JournalTab() {
   );
 
   return (
-    <div className="pb-4 pt-4 min-h-full flex flex-col">
+    <div className="pb-24 pt-4">
       {/* Header */}
       <div className="px-4 mb-4 flex items-start justify-between">
         <div>
@@ -135,9 +135,9 @@ export function JournalTab() {
       </div>
 
       {/* Timeline */}
-      <div className="px-4 flex-1">
+      <div className="px-4">
         {sortedDates.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-center py-12 text-muted-foreground">
+          <div className="text-center py-12 text-muted-foreground">
             {searchQuery ? (
               <>
                 <p className="text-lg">No results for "{searchQuery}"</p>

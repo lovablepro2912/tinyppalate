@@ -238,7 +238,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
             </div>
 
             {/* Sticky Action Bar */}
-            <div className="p-4 pb-6 bg-background border-t border-border safe-area-bottom">
+            <div className="p-4 bg-background border-t border-border safe-area-bottom">
               <Button
                 onClick={handleLogFood}
                 size="lg"

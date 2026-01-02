@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { FoodProvider } from '@/contexts/FoodContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
@@ -20,11 +20,10 @@ function AppContent() {
   const [showPicker, setShowPicker] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodWithState | null>(null);
   const [showSafetyWarning, setShowSafetyWarning] = useState(false);
-  const mainRef = useRef<HTMLElement>(null);
 
-  // Scroll to top when changing tabs - scroll the main container, not window
+  // Scroll to top when changing tabs
   useEffect(() => {
-    mainRef.current?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
   }, [activeTab]);
 
   const handleSelectFood = (food: FoodWithState, showSafety: boolean = false) => {
@@ -39,9 +38,9 @@ function AppContent() {
   };
 
   return (
-    <div className="h-full bg-background safe-area-top flex flex-col">
-      {/* Scrollable Content */}
-      <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden overscroll-none max-w-lg mx-auto w-full safe-area-x">
+    <div className="min-h-screen bg-background safe-area-top scroll-smooth-ios">
+      {/* Main Content */}
+      <main className="max-w-lg mx-auto safe-area-x">
         {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'journal' && <JournalTab />}
@@ -49,7 +48,7 @@ function AppContent() {
         {activeTab === 'profile' && <ProfileTab />}
       </main>
 
-      {/* Bottom Nav - Fixed at bottom */}
+      {/* Bottom Nav */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Food Picker Modal */}
