@@ -95,10 +95,7 @@ export function ProfileTab() {
           <div>
             <h2 className="text-xl font-bold text-foreground">{profile.baby_name}</h2>
             <p className="text-muted-foreground">
-              {monthsOld} months old ({daysOld} days)
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Born {format(birthDate, 'MMMM d, yyyy')}
+              {monthsOld} months, {daysOld % 30} days old
             </p>
           </div>
         </div>
@@ -196,7 +193,7 @@ export function ProfileTab() {
       >
         <button
           onClick={() => { medium(); setAchievementsOpen(true); }}
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99]"
+          className="w-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-xl p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99]"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
