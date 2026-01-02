@@ -389,7 +389,7 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
 
       {/* Stats */}
       <motion.div
-        className="grid grid-cols-3 gap-3 mb-6"
+        className={cn("grid grid-cols-3 gap-3 mb-6", isLocked && "blur-sm")}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -413,160 +413,165 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
         </div>
       </motion.div>
 
-      {/* Search Bar and Expand/Collapse */}
-      <motion.div
-        className="mb-4 space-y-3"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search allergens..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9 bg-muted/50 border-border"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+      {/* Search Bar and Expand/Collapse - Hidden for locked users */}
+      {!isLocked && (
+        <motion.div
+          className="mb-4 space-y-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search allergens..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-9 bg-muted/50 border-border"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={expandAll}
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={expandAll}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            Expand All
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={collapseAll}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            Collapse All
-          </Button>
-        </div>
-      </motion.div>
+              Expand All
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={collapseAll}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Collapse All
+            </Button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Allergen Groups */}
-      <motion.div
-        className="space-y-3"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        {filteredGroups.map((group, index) => (
-          <motion.div
-            key={group.family}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 + index * 0.03 }}
-          >
-            <Collapsible 
-              open={openGroups.has(group.family)}
-              onOpenChange={() => toggleGroup(group.family)}
+      <div className="relative">
+        <motion.div
+          className={cn("space-y-3", isLocked && "pointer-events-none")}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          {(isLocked ? filteredGroups.slice(0, 2) : filteredGroups).map((group, index) => (
+            <motion.div
+              key={group.family}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 + index * 0.03 }}
+              className={cn(isLocked && index === 1 && "opacity-50 blur-[2px]")}
             >
-              <CollapsibleTrigger asChild>
-                <button
-                  className={cn(
-                    "w-full p-4 rounded-2xl border-2 transition-all",
-                    "flex items-center justify-between",
-                    "hover:scale-[1.01] active:scale-[0.99]",
-                    getGroupBgClass(group.status)
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{allergenFamilies[group.family]?.emoji || '🍽️'}</span>
-                    <div className="text-left">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-foreground">
-                          {group.family} <span className="font-normal text-muted-foreground">{group.safeCount}/{group.totalCount}</span>
-                        </h3>
-                        {group.status === 'safe' && <CheckCircle className="w-4 h-4 text-success" />}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {allergenFamilies[group.family]?.note && (
-                          <span className="text-primary/70">{allergenFamilies[group.family].note}</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronDown 
-                    className={cn(
-                      "w-5 h-5 text-muted-foreground transition-transform",
-                      openGroups.has(group.family) && "rotate-180"
-                    )} 
-                  />
-                </button>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent>
-                <div className="mt-2 space-y-2 pl-2">
-                  {group.foods.map((food) => (
-                    <AllergenCard 
-                      key={food.id}
-                      food={food}
-                      onClick={() => onSelectFood(food, !food.state || food.state.status === 'TO_TRY')}
-                      compact
-                    />
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </motion.div>
-        ))}
-      </motion.div>
-
-      {/* Locked Overlay for non-premium users */}
-      {isLocked && (
-        <>
-          {/* Blur overlay on content */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 top-[200px] z-10 pointer-events-none"
-            style={{
-              background: 'linear-gradient(to bottom, transparent, hsl(var(--background)) 40%)',
-            }}
-          />
-          
-          {/* Unlock CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="fixed bottom-28 left-4 right-4 z-20"
-          >
-            <div className="max-w-lg mx-auto bg-card rounded-2xl card-shadow p-5 border border-border">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Lock className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground">Unlock Allergen Protocol</h3>
-                  <p className="text-sm text-muted-foreground">Get full access for $4.99/month</p>
-                </div>
-              </div>
-              <Button
-                onClick={() => setShowPaywall(true)}
-                className="w-full h-12 rounded-xl font-bold gap-2"
+              <Collapsible 
+                open={!isLocked && openGroups.has(group.family)}
+                onOpenChange={() => !isLocked && toggleGroup(group.family)}
               >
-                <Crown className="w-4 h-4" />
-                Upgrade to Premium
-              </Button>
+                <CollapsibleTrigger asChild>
+                  <button
+                    className={cn(
+                      "w-full p-4 rounded-2xl border-2 transition-all",
+                      "flex items-center justify-between",
+                      !isLocked && "hover:scale-[1.01] active:scale-[0.99]",
+                      getGroupBgClass(group.status)
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{allergenFamilies[group.family]?.emoji || '🍽️'}</span>
+                      <div className="text-left">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-foreground">
+                            {group.family} <span className="font-normal text-muted-foreground">{group.safeCount}/{group.totalCount}</span>
+                          </h3>
+                          {group.status === 'safe' && <CheckCircle className="w-4 h-4 text-success" />}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {allergenFamilies[group.family]?.note && (
+                            <span className="text-primary/70">{allergenFamilies[group.family].note}</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    {isLocked ? (
+                      <Lock className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown 
+                        className={cn(
+                          "w-5 h-5 text-muted-foreground transition-transform",
+                          openGroups.has(group.family) && "rotate-180"
+                        )} 
+                      />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent>
+                  <div className="mt-2 space-y-2 pl-2">
+                    {group.foods.map((food) => (
+                      <AllergenCard 
+                        key={food.id}
+                        food={food}
+                        onClick={() => onSelectFood(food, !food.state || food.state.status === 'TO_TRY')}
+                        compact
+                      />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Clickable overlay for locked state */}
+        {isLocked && (
+          <button
+            onClick={() => setShowPaywall(true)}
+            className="absolute inset-0 z-10 cursor-pointer"
+            aria-label="Unlock allergen protocol"
+          />
+        )}
+      </div>
+
+      {/* Unlock CTA for non-premium users */}
+      {isLocked && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-6 mb-8"
+        >
+          <div className="bg-card rounded-2xl card-shadow p-5 border border-border">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Lock className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">Unlock Allergen Protocol</h3>
+                <p className="text-sm text-muted-foreground">Track all 9 major allergens safely</p>
+              </div>
             </div>
-          </motion.div>
-        </>
+            <Button
+              onClick={() => setShowPaywall(true)}
+              className="w-full h-12 rounded-xl font-bold gap-2"
+            >
+              <Crown className="w-4 h-4" />
+              Upgrade to Premium
+            </Button>
+          </div>
+        </motion.div>
       )}
 
       {/* Paywall Sheet */}
