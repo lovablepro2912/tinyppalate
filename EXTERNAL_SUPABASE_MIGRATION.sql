@@ -2,15 +2,21 @@
 -- TINYPALATE - CONSOLIDATED SUPABASE MIGRATION
 -- Run this in your external Supabase SQL Editor
 -- ============================================
+-- 
+-- SCHEMA DESIGN NOTES:
+-- - ref_foods: Single source of truth for food definitions
+-- - user_food_states: Tracks user's progress with each food
+-- - food_logs: Individual log entries with reaction tracking
+-- - reaction_severity ENUM: 'none', 'mild', 'moderate', 'severe'
+--
+-- REMOVED (unused duplicate tables):
+-- - foods, food_serving_guidelines, food_exposures
+-- ============================================
 
 -- =====================
 -- PART 1: ENUMS/TYPES
 -- =====================
 
-CREATE TYPE public.food_category AS ENUM ('Dairy', 'Fruit', 'Vegetable', 'Grain', 'Legume', 'Protein');
-CREATE TYPE public.allergen_type AS ENUM ('egg', 'dairy', 'peanut', 'tree_nut', 'sesame', 'soy', 'wheat', 'fish', 'shellfish');
-CREATE TYPE public.age_range AS ENUM ('6_9_months', '9_12_months', '12_24_months');
-CREATE TYPE public.texture_type AS ENUM ('puree', 'mashed', 'finely_chopped', 'minced', 'shredded', 'soft_strips', 'bite_sized');
 CREATE TYPE public.reaction_severity AS ENUM ('none', 'mild', 'moderate', 'severe');
 
 -- =====================
@@ -94,7 +100,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ref_foods table (master list of foods)
+-- ref_foods table (master list of foods - SINGLE SOURCE OF TRUTH)
 CREATE TABLE public.ref_foods (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
@@ -114,7 +120,7 @@ CREATE POLICY "Anyone can view foods"
   ON public.ref_foods FOR SELECT
   USING (true);
 
--- user_food_states table
+-- user_food_states table (tracks user's progress with each food)
 CREATE TABLE public.user_food_states (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -149,12 +155,13 @@ CREATE TRIGGER update_user_food_states_updated_at
   BEFORE UPDATE ON public.user_food_states
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
--- food_logs table
+-- food_logs table (individual log entries)
+-- Uses reaction_severity ENUM for readable values: 'none', 'mild', 'moderate', 'severe'
 CREATE TABLE public.food_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   user_food_state_id UUID NOT NULL REFERENCES public.user_food_states(id) ON DELETE CASCADE,
-  reaction_severity SMALLINT NOT NULL DEFAULT 0 CHECK (reaction_severity IN (0, 1, 2)),
+  reaction_severity public.reaction_severity NOT NULL DEFAULT 'none',
   notes TEXT DEFAULT '',
   photo_url TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -177,100 +184,6 @@ CREATE POLICY "Users can update their own logs"
 CREATE POLICY "Users can delete their own logs"
   ON public.food_logs FOR DELETE
   USING (auth.uid() = user_id);
-
--- foods table (new expanded version)
-CREATE TABLE public.foods (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  food_name TEXT NOT NULL UNIQUE,
-  category public.food_category NOT NULL,
-  is_allergen BOOLEAN NOT NULL DEFAULT false,
-  allergen_type public.allergen_type,
-  choking_risk BOOLEAN NOT NULL DEFAULT false,
-  prep_notes TEXT NOT NULL,
-  min_age_months INTEGER NOT NULL DEFAULT 6,
-  excluded_under_12m BOOLEAN NOT NULL DEFAULT false,
-  active BOOLEAN NOT NULL DEFAULT true,
-  emoji TEXT NOT NULL DEFAULT '🍽️',
-  image_url TEXT,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.foods ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Anyone can view active foods"
-  ON public.foods FOR SELECT
-  USING (active = true);
-
-CREATE TRIGGER update_foods_updated_at
-  BEFORE UPDATE ON public.foods
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-CREATE INDEX idx_foods_category ON public.foods(category);
-CREATE INDEX idx_foods_is_allergen ON public.foods(is_allergen);
-CREATE INDEX idx_foods_active ON public.foods(active);
-
--- food_serving_guidelines table
-CREATE TABLE public.food_serving_guidelines (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  food_id UUID NOT NULL REFERENCES public.foods(id) ON DELETE CASCADE,
-  age_range public.age_range NOT NULL,
-  texture public.texture_type NOT NULL,
-  serving_notes TEXT NOT NULL,
-  choking_warning BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  UNIQUE(food_id, age_range)
-);
-
-ALTER TABLE public.food_serving_guidelines ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Anyone can view serving guidelines"
-  ON public.food_serving_guidelines FOR SELECT
-  USING (true);
-
-CREATE INDEX idx_food_serving_guidelines_food_id ON public.food_serving_guidelines(food_id);
-CREATE INDEX idx_food_serving_guidelines_age_range ON public.food_serving_guidelines(age_range);
-
--- food_exposures table
-CREATE TABLE public.food_exposures (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
-  food_id UUID NOT NULL REFERENCES public.foods(id) ON DELETE CASCADE,
-  date_introduced TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  age_at_exposure_months INTEGER,
-  reaction public.reaction_severity NOT NULL DEFAULT 'none',
-  reaction_notes TEXT,
-  confirmed_safe BOOLEAN NOT NULL DEFAULT false,
-  exposure_count INTEGER NOT NULL DEFAULT 1,
-  photo_url TEXT,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.food_exposures ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view their own exposures"
-  ON public.food_exposures FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own exposures"
-  ON public.food_exposures FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own exposures"
-  ON public.food_exposures FOR UPDATE
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own exposures"
-  ON public.food_exposures FOR DELETE
-  USING (auth.uid() = user_id);
-
-CREATE TRIGGER update_food_exposures_updated_at
-  BEFORE UPDATE ON public.food_exposures
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-CREATE INDEX idx_food_exposures_user_id ON public.food_exposures(user_id);
-CREATE INDEX idx_food_exposures_food_id ON public.food_exposures(food_id);
 
 -- tip_rules table
 CREATE TABLE public.tip_rules (
@@ -459,7 +372,7 @@ CREATE POLICY "Service role can upload food images"
 -- PART 5: SEED DATA
 -- =====================
 
--- Initial ref_foods data (you'll need to export the full data from Lovable Cloud)
+-- ref_foods data (master food list)
 INSERT INTO public.ref_foods (name, category, is_allergen, allergen_family, emoji) VALUES
 -- Fruits
 ('Avocado', 'Fruit', false, NULL, '🥑'),
@@ -523,13 +436,33 @@ INSERT INTO public.ref_foods (name, category, is_allergen, allergen_family, emoj
 ('Cod', 'Common Allergen', true, 'Fish', '🐟'),
 ('Walnut Butter', 'Common Allergen', true, 'Tree Nut', '🌰');
 
+-- tip_rules data
+INSERT INTO public.tip_rules (trigger_category, tip_text, action_label, action_food_id) VALUES
+('Fruit', 'Great start with fruits! Try introducing some vegetables next to expand variety.', 'Try Carrots', (SELECT id FROM public.ref_foods WHERE name = 'Carrots' LIMIT 1)),
+('Common Allergen', 'Introducing allergens early and often can help reduce allergy risk. Keep offering this food regularly.', NULL, NULL),
+('Protein', 'Proteins are important for growth! Try different textures as your baby develops.', NULL, NULL);
+
+-- general_tips data
+INSERT INTO public.general_tips (category, text) VALUES
+('getting_started', 'Start with single-ingredient foods to identify any potential reactions.'),
+('allergens', 'Introduce common allergens early (around 6 months) and consistently to reduce allergy risk.'),
+('textures', 'Progress from purees to mashed foods, then soft finger foods as your baby develops.'),
+('variety', 'Offer a variety of foods from different food groups to ensure balanced nutrition.'),
+('patience', 'It can take 10-15 exposures before a baby accepts a new food. Keep trying!');
+
 -- =====================
 -- END OF MIGRATION
 -- =====================
 -- 
+-- SUMMARY:
+-- ✓ reaction_severity uses ENUM ('none', 'mild', 'moderate', 'severe')
+-- ✓ ref_foods is the single source of truth for food definitions
+-- ✓ Removed unused tables: foods, food_exposures, food_serving_guidelines
+-- ✓ Removed unused enums: food_category, allergen_type, age_range, texture_type
+--
 -- NEXT STEPS:
--- 1. Export additional ref_foods data with image_url, serving_guide, choking_hazard_level from Lovable Cloud
--- 2. Export tip_rules and general_tips data
+-- 1. Run this migration in your Supabase SQL Editor
+-- 2. Export full ref_foods data with image_url, serving_guide from Lovable Cloud
 -- 3. Configure Auth settings (Site URL, Redirect URLs)
 -- 4. Set up Edge Function secrets
 -- 5. Deploy Edge Functions via Supabase CLI
