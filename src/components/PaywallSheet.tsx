@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useToast } from '@/hooks/use-toast';
 import { useHaptics } from '@/hooks/useHaptics';
+import { useCelebration } from '@/hooks/useCelebration';
 import { useState } from 'react';
 
 interface PaywallSheetProps {
@@ -40,6 +41,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
   const [isRestoring, setIsRestoring] = useState(false);
   const { toast } = useToast();
   const { medium, success } = useHaptics();
+  const { celebrate } = useCelebration();
 
   const monthlyPackage = packages.find(pkg => 
     pkg.packageType === 'MONTHLY' || pkg.identifier === '$rc_monthly'
@@ -62,6 +64,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
       const purchased = await purchasePackage(monthlyPackage);
       if (purchased) {
         success();
+        celebrate('premium');
         toast({
           title: 'Welcome to Premium!',
           description: 'You now have full access to the Allergen Protocol',

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import confetti from 'canvas-confetti';
 
-type CelebrationType = 'foodSafe' | 'groupComplete' | 'allComplete' | 'milestone';
+type CelebrationType = 'foodSafe' | 'groupComplete' | 'allComplete' | 'milestone' | 'premium';
 
 export function useCelebration() {
   const celebrate = useCallback((type: CelebrationType) => {
@@ -118,6 +118,63 @@ export function useCelebration() {
           origin: { y: 0.6 },
           colors: ['#f59e0b', '#fbbf24', '#fcd34d'],
         });
+        break;
+
+      case 'premium':
+        // Premium upgrade celebration - gold/amber themed
+        const premiumDuration = 3000;
+        const premiumEnd = Date.now() + premiumDuration;
+        
+        // Initial big golden burst
+        confetti({
+          particleCount: 150,
+          spread: 180,
+          origin: { y: 0.6 },
+          colors: ['#f59e0b', '#fbbf24', '#f97316', '#fcd34d', '#ea580c'],
+        });
+
+        // Continuous side bursts with gold colors
+        const premiumFrame = () => {
+          confetti({
+            particleCount: 4,
+            angle: 60,
+            spread: 70,
+            origin: { x: 0, y: 0.6 },
+            colors: ['#f59e0b', '#fbbf24', '#f97316'],
+          });
+          confetti({
+            particleCount: 4,
+            angle: 120,
+            spread: 70,
+            origin: { x: 1, y: 0.6 },
+            colors: ['#f59e0b', '#fbbf24', '#f97316'],
+          });
+
+          if (Date.now() < premiumEnd) {
+            requestAnimationFrame(premiumFrame);
+          }
+        };
+        premiumFrame();
+
+        // Star bursts
+        setTimeout(() => {
+          confetti({
+            particleCount: 80,
+            startVelocity: 25,
+            spread: 360,
+            origin: { x: 0.5, y: 0.4 },
+            colors: ['#fbbf24', '#f59e0b', '#fcd34d'],
+          });
+        }, 400);
+        setTimeout(() => {
+          confetti({
+            particleCount: 80,
+            startVelocity: 25,
+            spread: 360,
+            origin: { x: 0.5, y: 0.5 },
+            colors: ['#f97316', '#ea580c', '#fbbf24'],
+          });
+        }, 800);
         break;
     }
   }, []);
