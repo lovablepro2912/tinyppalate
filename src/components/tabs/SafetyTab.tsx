@@ -4,7 +4,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { AllergenCard } from '@/components/AllergenCard';
 import { PaywallSheet } from '@/components/PaywallSheet';
 import { FoodWithState } from '@/types/food';
-import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Search, X, Info, Baby, Heart, Phone, Lock, Crown } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Search, X, Info, Baby, Heart, Phone, Lock, Crown, Star, Sparkles } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -553,10 +553,10 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
           transition={{ delay: 0.3 }}
           className="mt-6 mb-8"
         >
-          <div className="bg-card rounded-2xl card-shadow p-5 border border-border">
+          <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-rose-500/10 rounded-2xl card-shadow p-5 border border-amber-500/20">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Lock className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-rose-500 flex items-center justify-center">
+                <Star className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 className="font-bold text-foreground">Unlock Allergen Protocol</h3>
@@ -565,9 +565,9 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
             </div>
             <Button
               onClick={() => setShowPaywall(true)}
-              className="w-full h-12 rounded-xl font-bold gap-2"
+              className="w-full h-12 rounded-xl font-bold gap-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white hover:opacity-90 border-0"
             >
-              <Crown className="w-4 h-4" />
+              <Sparkles className="w-4 h-4" />
               Upgrade to Premium
             </Button>
           </div>
