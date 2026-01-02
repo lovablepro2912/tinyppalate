@@ -38,22 +38,20 @@ function AppContent() {
   };
 
   return (
-    <>
-      <div className="h-[100dvh] flex flex-col overflow-hidden bg-background">
-        {/* Scrollable content area with safe area */}
-        <main 
-          ref={mainRef}
-          className="flex-1 overflow-y-auto overscroll-none max-w-lg mx-auto w-full safe-area-x safe-area-top pb-20"
-        >
-          {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
-          {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
-          {activeTab === 'journal' && <JournalTab />}
-          {activeTab === 'allergen' && <SafetyTab onSelectFood={handleSelectFood} />}
-          {activeTab === 'profile' && <ProfileTab />}
-        </main>
-      </div>
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-background">
+      {/* Scrollable content area */}
+      <main 
+        ref={mainRef}
+        className="flex-1 overflow-y-auto overscroll-none max-w-lg mx-auto w-full safe-area-x safe-area-top"
+      >
+        {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
+        {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
+        {activeTab === 'journal' && <JournalTab />}
+        {activeTab === 'allergen' && <SafetyTab onSelectFood={handleSelectFood} />}
+        {activeTab === 'profile' && <ProfileTab />}
+      </main>
 
-      {/* BottomNav OUTSIDE the container - truly fixed to viewport */}
+      {/* Nav is a flex child - never moves */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Modals */}
@@ -67,7 +65,7 @@ function AppContent() {
         onClose={handleCloseLogModal}
         showSafetyWarning={showSafetyWarning}
       />
-    </>
+    </div>
   );
 }
 
