@@ -1,8 +1,8 @@
-import { Home, Grid3X3, ScrollText, AlertTriangle, User } from 'lucide-react';
-import { createPortal } from 'react-dom';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { useHaptics } from '@/hooks/useHaptics';
+import { Home, Grid3X3, ScrollText, AlertTriangle, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { useHaptics } from "@/hooks/useHaptics";
+import { createPortal } from "react-dom";
 
 interface BottomNavProps {
   activeTab: string;
@@ -10,32 +10,31 @@ interface BottomNavProps {
 }
 
 const tabs = [
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'dex', label: 'Food Dex', icon: Grid3X3 },
-  { id: 'journal', label: 'Journal', icon: ScrollText },
-  { id: 'allergen', label: 'Allergen', icon: AlertTriangle },
-  { id: 'profile', label: 'Profile', icon: User },
+  { id: "home", label: "Home", icon: Home },
+  { id: "dex", label: "Food Dex", icon: Grid3X3 },
+  { id: "journal", label: "Journal", icon: ScrollText },
+  { id: "allergen", label: "Allergen", icon: AlertTriangle },
+  { id: "profile", label: "Profile", icon: User },
 ];
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { selection } = useHaptics();
-  
+
   const handleTabChange = (tabId: string) => {
-    if (tabId !== activeTab) {
-      selection();
-    }
+    if (tabId !== activeTab) selection();
     onTabChange(tabId);
   };
-  
+
+  // Guard for SSR
   if (typeof document === "undefined") return null;
 
   return createPortal(
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-md"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="flex justify-around items-center h-12 max-w-lg mx-auto px-2 safe-area-x">
-        {tabs.map(tab => {
+      <div className="flex justify-around items-center h-14 max-w-lg mx-auto px-2 safe-area-x">
+        {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
@@ -43,27 +42,27 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               onClick={() => handleTabChange(tab.id)}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-3 py-1.5 rounded-xl transition-all",
-                "relative no-select touch-manipulation",
-                "active:scale-95"
+                "relative touch-target no-select touch-manipulation",
+                "active:scale-95",
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 bg-primary/10 rounded-xl pointer-events-none"
+                  className="absolute inset-0 bg-primary/10 rounded-xl"
                   transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}
                 />
               )}
               <tab.icon
                 className={cn(
-                  "w-5 h-5 relative z-10",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  "w-5 h-5 transition-colors relative z-10",
+                  isActive ? "text-primary" : "text-muted-foreground",
                 )}
               />
               <span
                 className={cn(
-                  "text-[10px] font-semibold relative z-10 leading-tight",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  "text-[10px] font-semibold transition-colors relative z-10 leading-tight",
+                  isActive ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 {tab.label}
@@ -73,6 +72,6 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         })}
       </div>
     </nav>,
-    document.body
+    document.body,
   );
 }
