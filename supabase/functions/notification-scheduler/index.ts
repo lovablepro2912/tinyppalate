@@ -15,11 +15,14 @@ async function sendNotification(
   notificationType: string,
   referenceId?: string
 ) {
+  const internalApiKey = Deno.env.get('INTERNAL_API_KEY');
+  
   const response = await fetch(`${supabaseUrl}/functions/v1/send-notification`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'x-internal-api-key': internalApiKey || ''
     },
     body: JSON.stringify({
       user_id: userId,

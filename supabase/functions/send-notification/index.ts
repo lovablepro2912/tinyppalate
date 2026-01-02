@@ -172,6 +172,18 @@ serve(async (req) => {
   }
 
   try {
+    // Validate internal API key for function-to-function auth
+    const internalApiKey = Deno.env.get('INTERNAL_API_KEY');
+    const providedKey = req.headers.get('x-internal-api-key');
+    
+    if (!internalApiKey || providedKey !== internalApiKey) {
+      console.error('Unauthorized: Invalid or missing internal API key');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const payload: NotificationPayload = await req.json();
     const { user_id, title, body, data, notification_type, reference_id } = payload;
 
