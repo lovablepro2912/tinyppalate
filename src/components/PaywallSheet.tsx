@@ -131,6 +131,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 backdrop-blur-sm"
+        style={{ touchAction: 'none', overscrollBehavior: 'contain' }}
         onClick={onClose}
       >
         <motion.div
@@ -139,18 +140,18 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-lg bg-card rounded-t-3xl overflow-hidden"
+          className="relative w-full max-w-lg max-h-[85vh] bg-card rounded-t-3xl overflow-hidden flex flex-col"
         >
-          {/* Close Button */}
+          {/* Close Button - Positioned lower for notch safety */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center"
+            className="absolute top-6 right-4 z-10 w-8 h-8 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center"
           >
             <X className="w-4 h-4 text-primary-foreground" />
           </button>
 
           {/* Header with Premium Gradient */}
-          <div className="relative bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 px-6 pt-10 pb-8 text-center overflow-hidden">
+          <div className="relative bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 px-6 pt-14 pb-6 text-center overflow-hidden flex-shrink-0">
             {/* Decorative circles */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
@@ -187,9 +188,9 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
             </motion.p>
           </div>
 
-          {/* Features List */}
-          <div className="px-6 py-5">
-            <div className="space-y-3">
+          {/* Features List - Scrollable */}
+          <div className="px-6 py-4 overflow-y-auto flex-1">
+            <div className="space-y-2.5">
               {FEATURES.map((feature, idx) => (
                 <motion.div
                   key={feature.title}
@@ -212,7 +213,7 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
           </div>
 
           {/* Pricing Section */}
-          <div className="px-6 pb-6">
+          <div className="px-6 pb-6 flex-shrink-0">
             {/* Plan Toggle */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
