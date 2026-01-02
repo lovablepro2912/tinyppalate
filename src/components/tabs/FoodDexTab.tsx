@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { FoodCard } from '@/components/FoodCard';
 import { FoodDetailSheet } from '@/components/FoodDetailSheet';
+import { PaywallSheet } from '@/components/PaywallSheet';
 import { FoodWithState } from '@/types/food';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -20,6 +22,7 @@ interface FoodDexTabProps {
 
 export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
   const { getFoodsWithStates, getTriedCount, foods } = useFoodContext();
+  const { isPremium, isLoading: subscriptionLoading } = useSubscription();
   
   // Get unique categories from foods, with "All" as first option
   const categories = useMemo(() => {
@@ -30,6 +33,7 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFoodForDetail, setSelectedFoodForDetail] = useState<FoodWithState | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
   
   const allFoods = getFoodsWithStates();
   const triedCount = getTriedCount();
@@ -38,6 +42,11 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
   const currentCategory = selectedCategory || categories[0] || '';
 
   const handleFoodClick = (food: FoodWithState) => {
+    // If allergen and not premium, show paywall instead
+    if (food.is_allergen && !isPremium && !subscriptionLoading) {
+      setShowPaywall(true);
+      return;
+    }
     setSelectedFoodForDetail(food);
   };
 
@@ -193,20 +202,24 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
         animate={{ opacity: 1 }}
         className="grid grid-cols-3 sm:grid-cols-4 gap-3"
       >
-        {filteredFoods.map((food, index) => (
-          <motion.div
-            key={food.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.02 }}
-          >
-            <FoodCard 
-              food={food}
-              onClick={() => handleFoodClick(food)}
-              size="lg"
-            />
-          </motion.div>
-        ))}
+        {filteredFoods.map((food, index) => {
+          const isLocked = food.is_allergen && !isPremium && !subscriptionLoading;
+          return (
+            <motion.div
+              key={food.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.02 }}
+            >
+              <FoodCard 
+                food={food}
+                onClick={() => handleFoodClick(food)}
+                size="lg"
+                locked={isLocked}
+              />
+            </motion.div>
+          );
+        })}
       </motion.div>
 
       {/* Empty State */}
@@ -226,6 +239,12 @@ export function FoodDexTab({ onSelectFood }: FoodDexTabProps) {
         food={selectedFoodForDetail}
         onClose={handleCloseDetail}
         onLogFood={handleLogFromDetail}
+      />
+
+      {/* Paywall Sheet */}
+      <PaywallSheet 
+        isOpen={showPaywall} 
+        onClose={() => setShowPaywall(false)} 
       />
     </div>
   );

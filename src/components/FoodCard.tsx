@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FoodWithState } from '@/types/food';
-import { CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Clock, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FoodCardProps {
@@ -10,9 +10,10 @@ interface FoodCardProps {
   size?: 'sm' | 'md' | 'lg';
   showStatus?: boolean;
   forceColor?: boolean;
+  locked?: boolean;
 }
 
-export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceColor = false }: FoodCardProps) {
+export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceColor = false, locked = false }: FoodCardProps) {
   const [imageError, setImageError] = useState(false);
   const isUnlocked = food.state && (food.state.status === 'SAFE' || food.state.status === 'TRYING');
   const hasReaction = food.state?.status === 'REACTION';
@@ -35,8 +36,8 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
     lg: 'w-20 h-20',
   };
 
-  // Only apply grayscale if not unlocked, not a reaction, and not forced to color
-  const shouldBeGrayscale = !forceColor && !isUnlocked && !hasReaction;
+  // Only apply grayscale if not unlocked, not a reaction, not forced to color, or locked
+  const shouldBeGrayscale = locked || (!forceColor && !isUnlocked && !hasReaction);
 
   // Use image if available and not errored
   const hasImage = food.image_url && !imageError;
@@ -48,7 +49,8 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
         "relative flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
         "bg-card card-shadow border border-border/50",
         "hover:scale-105 active:scale-95",
-        hasReaction && "ring-2 ring-danger/50 bg-danger/5"
+        hasReaction && !locked && "ring-2 ring-danger/50 bg-danger/5",
+        locked && "opacity-70"
       )}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.95 }}
@@ -75,7 +77,17 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
         {food.name}
       </span>
 
-      {showStatus && food.state && (
+      {/* Lock icon for locked items */}
+      {locked && (
+        <div className="absolute -top-1 -right-1">
+          <div className="w-5 h-5 rounded-full bg-muted-foreground flex items-center justify-center">
+            <Lock className="w-3 h-3 text-background" />
+          </div>
+        </div>
+      )}
+
+      {/* Status badge for unlocked items */}
+      {!locked && showStatus && food.state && (
         <div className="absolute -top-1 -right-1">
           {food.state.status === 'SAFE' && (
             <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center">

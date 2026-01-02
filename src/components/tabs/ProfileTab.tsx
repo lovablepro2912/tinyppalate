@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useFoodContext } from '@/contexts/FoodContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Baby, Calendar, Trophy, TrendingUp, BookOpen, Pencil, LogOut, Trash2, ChevronRight, ExternalLink, Award } from 'lucide-react';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import { Baby, Calendar, Trophy, TrendingUp, BookOpen, Pencil, LogOut, Trash2, ChevronRight, ExternalLink, Award, Crown } from 'lucide-react';
 import { differenceInMonths, differenceInDays, format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { OnboardingGuideSheet } from '@/components/onboarding/OnboardingGuideSheet';
@@ -10,6 +11,7 @@ import { EditProfileModal } from '@/components/EditProfileModal';
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
 import { NotificationSettings } from '@/components/NotificationSettings';
 import { AchievementsSheet } from '@/components/AchievementsSheet';
+import { PaywallSheet } from '@/components/PaywallSheet';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useAchievements } from '@/hooks/useAchievements';
 import { APP_CONFIG } from '@/config/app';
@@ -19,9 +21,11 @@ export function ProfileTab() {
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   
   const { profile, getTriedCount, getAllergenFoods, logs } = useFoodContext();
   const { user, signOut } = useAuth();
+  const { isPremium, expiresAt } = useSubscription();
   const { medium } = useHaptics();
   const { getUnlockedCount, getTotalCount } = useAchievements();
   
@@ -141,6 +145,46 @@ export function ProfileTab() {
         <p className="text-sm text-muted-foreground mt-2">
           {100 - triedCount} more foods until the 100 Foods milestone! 🎉
         </p>
+      </motion.div>
+
+      {/* Subscription Status */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.32 }}
+        className="mb-4"
+      >
+        {isPremium ? (
+          <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <p className="font-semibold text-primary-foreground">Premium Member</p>
+                <p className="text-xs text-primary-foreground/80">
+                  {expiresAt ? `Renews ${format(expiresAt, 'MMM d, yyyy')}` : 'Active subscription'}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => { medium(); setPaywallOpen(true); }}
+            className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-xl p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-primary-foreground">Upgrade to Premium</p>
+                <p className="text-xs text-primary-foreground/80">Unlock the Allergen Protocol</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-primary-foreground/80" />
+          </button>
+        )}
       </motion.div>
 
       {/* Achievements Button */}
@@ -279,6 +323,11 @@ export function ProfileTab() {
       <AchievementsSheet
         open={achievementsOpen}
         onOpenChange={setAchievementsOpen}
+      />
+      
+      <PaywallSheet
+        isOpen={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
       />
     </div>
   );
