@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { FoodWithState } from '@/types/food';
 import { CheckCircle, AlertTriangle, Clock, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,6 @@ interface FoodCardProps {
 
 export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceColor = false, locked = false }: FoodCardProps) {
   const [imageError, setImageError] = useState(false);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const isUnlocked = food.state && (food.state.status === 'SAFE' || food.state.status === 'TRYING');
   const hasReaction = food.state?.status === 'REACTION';
 
@@ -42,40 +42,18 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
   // Use image if available and not errored
   const hasImage = food.image_url && !imageError;
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartRef.current) return;
-    
-    const touch = e.changedTouches[0];
-    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
-    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
-    
-    // Only trigger click if movement was minimal (tap, not scroll)
-    if (deltaX < 10 && deltaY < 10) {
-      e.preventDefault();
-      onClick?.();
-    }
-    
-    touchStartRef.current = null;
-  };
-
   return (
-    <button
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+    <motion.button
       onClick={onClick}
       className={cn(
-        "relative flex flex-col items-center gap-1 p-2 rounded-2xl",
+        "relative flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
         "bg-card card-shadow border border-border/50",
-        "touch-fix transition-transform duration-150",
-        "hover:-translate-y-0.5 active:scale-95",
+        "hover:scale-105 active:scale-95",
         hasReaction && !locked && "ring-2 ring-danger/50 bg-danger/5",
         locked && "opacity-70"
       )}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.95 }}
     >
       <div className={cn(
         sizeClasses[size],
@@ -132,6 +110,6 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
           )}
         </div>
       )}
-    </button>
+    </motion.button>
   );
 }

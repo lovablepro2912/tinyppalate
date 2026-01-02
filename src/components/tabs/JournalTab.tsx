@@ -91,9 +91,9 @@ export function JournalTab() {
   );
 
   return (
-    <div className="pb-24">
+    <div className="pb-24 pt-4">
       {/* Header */}
-      <div className="px-4 mb-4 flex items-start justify-between safe-top pt-2">
+      <div className="px-4 mb-4 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Food Journal</h1>
           <p className="text-muted-foreground text-sm">

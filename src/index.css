@@ -163,7 +163,7 @@
 
   /* iOS Safe Area utilities */
   .safe-top {
-    padding-top: max(env(safe-area-inset-top), 12px);
+    padding-top: max(env(safe-area-inset-top), 8px);
   }
 
   .safe-area-top {
@@ -199,14 +199,6 @@
   /* Prevent text selection on touch */
   .no-select {
     -webkit-user-select: none;
-    user-select: none;
-  }
-
-  /* iOS Touch Optimizations */
-  .touch-fix {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
     user-select: none;
   }
 

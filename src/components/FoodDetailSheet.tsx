@@ -123,9 +123,8 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
               
               {/* Close Button */}
               <button
-                onTouchEnd={(e) => { e.preventDefault(); handleClose(); }}
                 onClick={handleClose}
-                className="absolute top-3 right-4 p-2 rounded-full bg-muted/80 hover:bg-muted transition-colors touch-fix"
+                className="absolute top-3 right-4 p-2 rounded-full bg-muted/80 hover:bg-muted transition-colors"
               >
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
@@ -165,9 +164,8 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
                 {AGE_TABS.map((tab) => (
                   <button
                     key={tab.key}
-                    onTouchEnd={(e) => { e.preventDefault(); setActiveTab(tab.key); }}
                     onClick={() => setActiveTab(tab.key)}
-                    className={`flex-1 py-2.5 px-3 rounded-full text-sm font-semibold transition-all touch-fix ${
+                    className={`flex-1 py-2.5 px-3 rounded-full text-sm font-semibold transition-all ${
                       activeTab === tab.key
                         ? "bg-primary text-primary-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
