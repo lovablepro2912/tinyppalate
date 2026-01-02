@@ -565,10 +565,11 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
             </div>
             <Button
               onClick={() => setShowPaywall(true)}
-              className="w-full h-12 rounded-xl font-bold gap-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white hover:opacity-90 border-0"
+              className="w-full h-12 rounded-xl font-bold gap-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white hover:opacity-90 border-0 relative overflow-hidden"
             >
-              <Sparkles className="w-4 h-4" />
-              Upgrade to Premium
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer" />
+              <Sparkles className="w-4 h-4 relative z-10" />
+              <span className="relative z-10">Upgrade to Premium</span>
             </Button>
           </div>
         </motion.div>
