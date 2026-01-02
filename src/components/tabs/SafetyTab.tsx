@@ -3,6 +3,7 @@ import { useFoodContext } from '@/contexts/FoodContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { AllergenCard } from '@/components/AllergenCard';
 import { PaywallSheet } from '@/components/PaywallSheet';
+import { PremiumWelcomeModal } from '@/components/PremiumWelcomeModal';
 import { FoodWithState } from '@/types/food';
 import { ShieldCheck, AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Search, X, Info, Baby, Heart, Phone, Lock, Crown, Star, Sparkles } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -36,6 +37,7 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showInfoSheet, setShowInfoSheet] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const { countryCode } = useUserLocation();
   const emergencyInfo = getPoisonControlInfo(countryCode || 'US');
   
@@ -43,6 +45,17 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
   const safeCount = allergens.filter(f => f.state?.status === 'SAFE').length;
   const tryingCount = allergens.filter(f => f.state?.status === 'TRYING').length;
   const reactionCount = allergens.filter(f => f.state?.status === 'REACTION').length;
+
+  // Show welcome modal for new premium users
+  useEffect(() => {
+    if (isPremium && !subscriptionLoading) {
+      const hasSeenWelcome = localStorage.getItem('premium_welcome_seen');
+      if (!hasSeenWelcome) {
+        setShowWelcome(true);
+        localStorage.setItem('premium_welcome_seen', 'true');
+      }
+    }
+  }, [isPremium, subscriptionLoading]);
 
   // Calculate group status
   const getGroupStatus = (foods: FoodWithState[]): GroupStatus => {
@@ -579,6 +592,12 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
       <PaywallSheet 
         isOpen={showPaywall} 
         onClose={() => setShowPaywall(false)} 
+      />
+
+      {/* Premium Welcome Modal */}
+      <PremiumWelcomeModal
+        isOpen={showWelcome}
+        onClose={() => setShowWelcome(false)}
       />
     </div>
   );
