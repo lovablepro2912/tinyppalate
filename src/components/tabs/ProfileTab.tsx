@@ -168,9 +168,10 @@ export function ProfileTab() {
         ) : (
           <button
             onClick={() => { medium(); setPaywallOpen(true); }}
-            className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-xl p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all"
+            className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-xl p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all relative overflow-hidden"
           >
-            <div className="flex items-center gap-3">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            <div className="flex items-center gap-3 relative z-10">
               <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
                 <Crown className="w-5 h-5 text-primary-foreground" />
               </div>
@@ -179,7 +180,7 @@ export function ProfileTab() {
                 <p className="text-xs text-primary-foreground/80">Unlock the Allergen Protocol</p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-primary-foreground/80" />
+            <ChevronRight className="w-5 h-5 text-primary-foreground/80 relative z-10" />
           </button>
         )}
       </motion.div>
