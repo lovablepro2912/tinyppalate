@@ -33,7 +33,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       {/* Actual nav bar */}
       <div className="border-t bg-background/80 backdrop-blur-md">
-        <div className="flex justify-around items-center h-14 max-w-lg mx-auto px-2 safe-area-x">
+        <div className="flex justify-around items-center h-12 max-w-lg mx-auto px-2 safe-area-x">
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
             return (
