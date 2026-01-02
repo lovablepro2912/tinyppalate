@@ -228,14 +228,15 @@ export function PaywallSheet({ isOpen, onClose }: PaywallSheetProps) {
               <Button
                 onClick={handlePurchase}
                 disabled={isPurchasing || isLoading}
-                className="w-full h-14 rounded-2xl text-lg font-bold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:opacity-90 transition-opacity border-0 gap-2"
+                className="w-full h-14 rounded-2xl text-lg font-bold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:opacity-90 transition-opacity border-0 gap-2 relative overflow-hidden"
               >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer" />
                 {isPurchasing ? (
-                  <span className="animate-pulse">Processing...</span>
+                  <span className="animate-pulse relative z-10">Processing...</span>
                 ) : (
                   <>
-                    <Star className="w-5 h-5 fill-current" />
-                    Upgrade to Premium
+                    <Star className="w-5 h-5 fill-current relative z-10" />
+                    <span className="relative z-10">Upgrade to Premium</span>
                   </>
                 )}
               </Button>
