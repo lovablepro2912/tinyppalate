@@ -195,7 +195,7 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
   const isLocked = !isPremium && !subscriptionLoading;
 
   return (
-    <div className="pb-24 px-4">
+    <div className="pb-4 px-4">
       {/* Header */}
       <motion.div 
         className="pt-6 mb-6"

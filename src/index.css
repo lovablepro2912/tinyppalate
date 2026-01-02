@@ -112,9 +112,17 @@
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Nunito', sans-serif;
+    overscroll-behavior: none;
+    overflow: hidden;
+    height: 100%;
+  }
+  
+  #root {
+    height: 100%;
+    overflow: hidden;
   }
 }
 

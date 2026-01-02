@@ -237,8 +237,8 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
               </AnimatePresence>
             </div>
 
-            {/* Sticky Action Bar - Extra padding for bottom nav */}
-            <div className="p-4 pb-24 bg-background border-t border-border safe-area-bottom">
+            {/* Sticky Action Bar */}
+            <div className="p-4 pb-6 bg-background border-t border-border safe-area-bottom">
               <Button
                 onClick={handleLogFood}
                 size="lg"
