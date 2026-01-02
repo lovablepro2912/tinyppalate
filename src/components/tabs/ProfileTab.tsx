@@ -74,7 +74,7 @@ export function ProfileTab() {
     <div className="pb-24 px-4">
       {/* Header */}
       <motion.div 
-        className="pt-6 mb-6"
+        className="safe-top pt-2 mb-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
