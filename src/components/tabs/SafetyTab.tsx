@@ -198,7 +198,7 @@ export function SafetyTab({ onSelectFood }: SafetyTabProps) {
     <div className="px-4">
       {/* Header */}
       <motion.div 
-        className="pt-2 mb-6"
+        className="pt-0 mb-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
