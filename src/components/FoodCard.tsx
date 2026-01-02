@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { FoodWithState } from '@/types/food';
 import { CheckCircle, AlertTriangle, Clock, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -42,18 +41,23 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
   // Use image if available and not errored
   const hasImage = food.image_url && !imageError;
 
+  const handleTouch = (e: React.TouchEvent) => {
+    e.preventDefault();
+    onClick?.();
+  };
+
   return (
-    <motion.button
+    <button
+      onTouchEnd={handleTouch}
       onClick={onClick}
       className={cn(
-        "relative flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
+        "relative flex flex-col items-center gap-1 p-2 rounded-2xl",
         "bg-card card-shadow border border-border/50",
-        "hover:scale-105 active:scale-95",
+        "touch-fix transition-transform duration-150",
+        "hover:-translate-y-0.5 active:scale-95",
         hasReaction && !locked && "ring-2 ring-danger/50 bg-danger/5",
         locked && "opacity-70"
       )}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.95 }}
     >
       <div className={cn(
         sizeClasses[size],
@@ -110,6 +114,6 @@ export function FoodCard({ food, onClick, size = 'md', showStatus = true, forceC
           )}
         </div>
       )}
-    </motion.button>
+    </button>
   );
 }

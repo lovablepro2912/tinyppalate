@@ -1,6 +1,5 @@
 import { Home, Grid3X3, ScrollText, AlertTriangle, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 import { useHaptics } from '@/hooks/useHaptics';
 
 interface BottomNavProps {
@@ -20,10 +19,11 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { selection } = useHaptics();
   
   const handleTabChange = (tabId: string) => {
+    onTabChange(tabId);
+    // Fire haptic after state change to avoid blocking
     if (tabId !== activeTab) {
       selection();
     }
-    onTabChange(tabId);
   };
   
   return (
@@ -34,20 +34,24 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           return (
             <button
               key={tab.id}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleTabChange(tab.id);
+              }}
               onClick={() => handleTabChange(tab.id)}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-3 py-1.5 rounded-xl transition-all",
-                "relative touch-target no-select",
-                "active:scale-95"
+                "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-3 py-1.5 rounded-xl",
+                "relative touch-target no-select touch-fix",
+                "transition-transform duration-150 active:scale-95"
               )}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-primary/10 rounded-xl"
-                  transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}
-                />
-              )}
+              {/* CSS-based active indicator instead of Framer Motion layoutId */}
+              <div
+                className={cn(
+                  "absolute inset-0 rounded-xl transition-all duration-200",
+                  isActive ? "bg-primary/10" : "bg-transparent"
+                )}
+              />
               <tab.icon className={cn(
                 "w-5 h-5 transition-colors relative z-10",
                 isActive ? "text-primary" : "text-muted-foreground"
