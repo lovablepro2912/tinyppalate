@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Home, Grid3X3, ScrollText, AlertTriangle, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHaptics } from '@/hooks/useHaptics';
@@ -17,6 +18,7 @@ const tabs = [
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { selection } = useHaptics();
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   
   const handleTabChange = (tabId: string) => {
     onTabChange(tabId);
@@ -24,6 +26,27 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     if (tabId !== activeTab) {
       selection();
     }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, tabId: string) => {
+    if (!touchStartRef.current) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+    
+    // Only trigger click if movement was minimal (tap, not scroll)
+    if (deltaX < 10 && deltaY < 10) {
+      e.preventDefault();
+      handleTabChange(tabId);
+    }
+    
+    touchStartRef.current = null;
   };
   
   return (
@@ -38,10 +61,8 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           return (
             <button
               key={tab.id}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                handleTabChange(tab.id);
-              }}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={(e) => handleTouchEnd(e, tab.id)}
               onClick={() => handleTabChange(tab.id)}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-3 py-1.5 rounded-xl",
