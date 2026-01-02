@@ -39,9 +39,9 @@ function AppContent() {
   };
 
   return (
-    <div className="h-screen bg-background safe-area-top flex flex-col overflow-hidden relative">
+    <div className="h-screen bg-background safe-area-top flex flex-col overflow-hidden">
       {/* Scrollable Content */}
-      <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-none max-w-lg mx-auto w-full safe-area-x">
+      <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-none max-w-lg mx-auto w-full safe-area-x pb-0">
         {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'journal' && <JournalTab />}
