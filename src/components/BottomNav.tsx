@@ -34,17 +34,17 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           return (
             <button
               key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
+              onPointerUp={() => handleTabChange(tab.id)}
+              style={{ touchAction: 'manipulation' }}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-3 py-1.5 rounded-xl transition-all",
-                "relative touch-target no-select",
-                "active:scale-95"
+                "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-3 py-1.5 rounded-xl transition-colors",
+                "relative touch-target no-select"
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 bg-primary/10 rounded-xl"
+                  className="absolute inset-0 bg-primary/10 rounded-xl pointer-events-none"
                   transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}
                 />
               )}

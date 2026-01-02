@@ -38,9 +38,9 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background safe-area-top scroll-smooth-ios">
-      {/* Main Content */}
-      <main className="max-w-lg mx-auto safe-area-x">
+    <div className="h-screen bg-background safe-area-top flex flex-col overflow-hidden">
+      {/* Scrollable Content */}
+      <main className="flex-1 overflow-y-auto overscroll-none max-w-lg mx-auto w-full safe-area-x">
         {activeTab === 'home' && <HomeTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'dex' && <FoodDexTab onSelectFood={(food) => handleSelectFood(food, false)} />}
         {activeTab === 'journal' && <JournalTab />}
@@ -48,7 +48,7 @@ function AppContent() {
         {activeTab === 'profile' && <ProfileTab />}
       </main>
 
-      {/* Bottom Nav */}
+      {/* Bottom Nav - Fixed at bottom */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Food Picker Modal */}
