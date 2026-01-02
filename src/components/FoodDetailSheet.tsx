@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, AlertTriangle, Info, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
   };
 
   if (!food) return null;
+  if (typeof document === "undefined") return null;
 
   const servingGuide = food.serving_guide as ServingGuide | null;
   const hasServingGuide = servingGuide && Object.keys(servingGuide).length > 0;
@@ -93,7 +95,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
     }
   };
 
-  return (
+  return createPortal(
     <AnimatePresence mode="wait">
       {isVisible && (
         <>
@@ -250,6 +252,7 @@ export function FoodDetailSheet({ food, onClose, onLogFood }: FoodDetailSheetPro
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
