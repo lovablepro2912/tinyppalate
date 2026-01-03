@@ -23,7 +23,7 @@ const queryClient = new QueryClient();
 
 // Check if running on native platform or in development mode
 // TEMP: Allow web access for testing (set to true to enable web access)
-const ALLOW_WEB_ACCESS = false;
+const ALLOW_WEB_ACCESS = true;
 const isNativePlatform = Capacitor.isNativePlatform() || import.meta.env.DEV || ALLOW_WEB_ACCESS;
 
 // Download App page for web visitors
