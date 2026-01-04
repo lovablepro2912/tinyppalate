@@ -6,6 +6,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Convert food name to URL-safe slug
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')     // Replace spaces with hyphens
+    .replace(/-+/g, '-');     // Replace multiple hyphens with single
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -92,16 +102,29 @@ serve(async (req) => {
 
     console.log(`Image generated: ${imageFormat}, size: ${imageBytes.length} bytes`);
 
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage with food name as filename
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const fileName = `food-${foodId}.${imageFormat}`;
+    // Create filename from food name
+    const slugName = slugify(foodName);
+    const fileName = `${slugName}.${imageFormat}`;
+    
+    // Check if file already exists - if so, append ID to avoid conflicts
+    const { data: existingFile } = await supabase.storage
+      .from("food-images")
+      .list("", { search: slugName });
+    
+    const finalFileName = existingFile && existingFile.length > 0 
+      ? `${slugName}-${foodId}.${imageFormat}`
+      : fileName;
+    
+    console.log(`Uploading as: ${finalFileName}`);
     
     const { error: uploadError } = await supabase.storage
       .from("food-images")
-      .upload(fileName, imageBytes, {
+      .upload(finalFileName, imageBytes, {
         contentType: `image/${imageFormat}`,
         upsert: true,
       });
@@ -114,7 +137,7 @@ serve(async (req) => {
     // Get public URL
     const { data: urlData } = supabase.storage
       .from("food-images")
-      .getPublicUrl(fileName);
+      .getPublicUrl(finalFileName);
 
     const imageUrl = urlData.publicUrl;
     console.log(`Image uploaded: ${imageUrl}`);
@@ -130,13 +153,14 @@ serve(async (req) => {
       throw new Error(`Database update failed: ${updateError.message}`);
     }
 
-    console.log(`Successfully generated and saved image for ${foodName}`);
+    console.log(`Successfully generated and saved image for ${foodName} as ${finalFileName}`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         foodId, 
-        foodName, 
+        foodName,
+        fileName: finalFileName,
         imageUrl 
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
